@@ -1,4 +1,4 @@
-// src/app/api/auth/login/route.ts
+// src/app/api/auth/line-login/route.ts
 import { SignJWT } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -38,8 +38,18 @@ export async function POST(req: NextRequest) {
     });
 
     if (!lineRes.ok) {
+      const errorText = await lineRes.text();
+
+      console.error("LINE verify failed:", {
+        status: lineRes.status,
+        body: errorText,
+      });
+
       return NextResponse.json(
-        { message: "Invalid LINE idToken" },
+        {
+          message: "Invalid LINE idToken",
+          detail: errorText,
+        },
         { status: 401 },
       );
     }
