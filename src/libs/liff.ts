@@ -18,8 +18,13 @@ export function isLiffLoggedIn() {
 }
 
 export function loginWithLiff() {
+  const redirectUri = `${window.location.origin}/login`;
+
+  console.log("CALL liff.login");
+  console.log("redirectUri:", redirectUri);
+
   liff.login({
-    redirectUri: `${window.location.origin}/login`,
+    redirectUri,
   });
 }
 

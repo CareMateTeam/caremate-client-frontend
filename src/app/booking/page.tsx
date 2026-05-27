@@ -1,7 +1,8 @@
-import React from 'react'
+"use client";
+
+import { useI18n } from "@/libs/i18n/i18n-provider";
 
 export default function BookingPage() {
-  return (
-    <div>Booking page: logged in only</div>
-  )
+  const { t } = useI18n();
+  return <div>{t.booking.title}</div>;
 }
