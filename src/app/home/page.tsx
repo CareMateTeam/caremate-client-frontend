@@ -1,111 +1,166 @@
 "use client";
 
+import Link from "next/link";
 import { useI18n } from "@/libs/i18n/i18n-provider";
 import LanguageSwitcher from "@/components/language-switcher";
+import { BottomNavbar } from "@/components/button-nav-bar";
+import { UserInformation, UserProfileResponse } from "@/dto/user";
+import { TopUserInformation } from "@/components/card/user-information";
+import { useEffect, useState } from "react";
+import {
+  mapUserProfileToTopInformation,
+  unwrapApiData,
+} from "@/libs/user/map-user-profile";
+import { TopUserInformationSkeleton } from "@/components/card/user-skelton";
 
 export default function HomePage() {
   const { t } = useI18n();
+
+  const [currentUser, setCurrentUser] = useState<UserInformation | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    const fetchMe = async () => {
+      try {
+        setLoadingUser(true);
+
+        const res = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          throw new Error(data?.message ?? "Failed to fetch user profile");
+        }
+
+        const profile = unwrapApiData<UserProfileResponse>(data);
+        const mappedUser = mapUserProfileToTopInformation(profile);
+
+        setCurrentUser(mappedUser);
+      } catch (error) {
+        console.error("Fetch user profile error:", error);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    fetchMe();
+  }, []);
 
   const serviceCards = [
     {
       icon: "👩‍⚕️",
       title: t.home.findCaregiver,
       desc: t.home.findCaregiverDesc,
-      badge: "Popular",
+      badge: t.home.findCaregiverBadge,
     },
     {
       icon: "📅",
       title: t.home.bookService,
       desc: t.home.bookServiceDesc,
-      badge: "Fast",
+      badge: t.home.bookServiceBadge,
     },
     {
       icon: "💬",
       title: t.home.chatSupport,
       desc: t.home.chatSupportDesc,
-      badge: "24/7",
+      badge: t.home.chatSupportBadge,
     },
     {
       icon: "📝",
       title: t.home.carePlan,
       desc: t.home.carePlanDesc,
-      badge: "Smart",
+      badge: t.home.carePlanBadge,
     },
   ];
 
   const stats = [
     {
-      label: "Care hours",
+      label: t.home.statsCareHoursLabel,
       value: "128",
-      unit: "hrs",
+      unit: t.home.statsCareHoursUnit,
     },
     {
-      label: "Bookings",
+      label: t.home.statsBookingsLabel,
       value: "12",
-      unit: "times",
+      unit: t.home.statsBookingsUnit,
     },
     {
-      label: "Care score",
+      label: t.home.statsCareScoreLabel,
       value: "96",
-      unit: "%",
+      unit: t.home.statsCareScoreUnit,
     },
   ];
 
-  const careSteps = [
-    {
-      title: "ประเมินความต้องการ",
-      desc: "เลือกบริการที่เหมาะกับผู้ป่วยหรือคนในครอบครัว",
-    },
-    {
-      title: "จับคู่ผู้ดูแล",
-      desc: "ระบบช่วยแนะนำผู้ดูแลตามประเภทงานและช่วงเวลา",
-    },
-    {
-      title: "ติดตามการดูแล",
-      desc: "ดูสถานะการจอง แผนการดูแล และการช่วยเหลือผ่าน LINE",
-    },
-  ];
+  const careSteps = t.home.careSteps;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-white px-5 py-6 text-slate-900">
+    <main className="relative min-h-screen overflow-hidden bg-white px-5 pb-28 pt-6 text-slate-900">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-emerald-100 to-sky-100" />
+      <div className="absolute inset-0 bg-gradient-to-b from-white via-emerald-50/80 to-sky-50/80" />
       <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-emerald-200/35 blur-3xl" />
       <div className="pointer-events-none absolute top-24 right-[-80px] h-80 w-80 rounded-full bg-sky-200/35 blur-3xl" />
       <div className="pointer-events-none absolute bottom-[-80px] left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-rose-100/40 blur-3xl" />
 
       <div className="relative z-10 mx-auto max-w-md space-y-6">
-        {/* Header */}
-        <header className="overflow-hidden rounded-[2rem]  bg-white p-5 shadow-xl  backdrop-blur-xl">
-          <div className="flex items-start justify-between">
+        {/* App Header */}
+        <header className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
+              Welcome back
+            </p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950">
+              {t.common.appName}
+            </h1>
+          </div>
+
+          <LanguageSwitcher />
+        </header>
+
+        {loadingUser ? (
+          <TopUserInformationSkeleton />
+        ) : currentUser ? (
+          <TopUserInformation user={currentUser} />
+        ) : null}
+
+        {/* Overview */}
+        <section className="overflow-hidden rounded-[2rem] bg-white p-5 shadow-xl shadow-emerald-100/60 backdrop-blur-xl">
+          <div className="flex items-start justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                {t.home.username}
+                Today overview
               </div>
 
-              <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950">
-                {t.common.appName}
-              </h1>
+              <h2 className="mt-4 text-2xl font-black tracking-tight text-slate-950">
+                ดูแลคนสำคัญ
+                <br />
+                ได้ง่ายขึ้นในที่เดียว
+              </h2>
 
               <p className="mt-2 max-w-xs text-sm leading-6 text-slate-600">
                 {t.home.description}
               </p>
             </div>
 
-            <LanguageSwitcher />
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-emerald-100 to-sky-100 text-2xl shadow-inner">
+              💚
+            </div>
           </div>
 
           <div className="mt-5 rounded-[1.5rem] bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-4 text-white shadow-lg shadow-emerald-100">
-            <p className="text-xs font-medium text-white">
-              Today care overview
+            <p className="text-xs font-medium text-white/90">
+              Today care summary
             </p>
 
             <div className="mt-3 grid grid-cols-3 gap-3">
               {stats.map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-2xl bg-white/18 p-3 backdrop-blur"
+                  className="rounded-2xl bg-white/20 p-3 backdrop-blur"
                 >
                   <p className="text-xl font-black leading-none">
                     {item.value}
@@ -118,7 +173,7 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-        </header>
+        </section>
 
         {/* Quick service cards */}
         <section>
@@ -145,7 +200,7 @@ export default function HomePage() {
               <button
                 key={item.title}
                 type="button"
-                className="group rounded-[1.6rem] bg-white/85 p-4 text-left shadow-lg  backdrop-blur transition hover:-translate-y-1 hover:shadow-xl"
+                className="group rounded-[1.6rem] bg-white/90 p-4 text-left shadow-lg shadow-emerald-50 backdrop-blur transition hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-emerald-50 to-sky-50 text-2xl shadow-inner">
@@ -166,10 +221,8 @@ export default function HomePage() {
                 </p>
 
                 <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-600">
-                  Start
-                  <span className="transition group-hover:translate-x-1">
-                    →
-                  </span>
+                  {t.home.actionLabel}
+                  <span className="transition group-hover:translate-x-1"></span>
                 </div>
               </button>
             ))}
@@ -223,10 +276,10 @@ export default function HomePage() {
         <section className="rounded-[2rem] border border-white/80 bg-white/75 p-5 shadow-xl shadow-sky-50 backdrop-blur-xl">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600">
-              Care journey
+              {t.home.careJourneyTitle}
             </p>
             <h2 className="mt-1 text-lg font-black text-slate-950">
-              ขั้นตอนการดูแลที่ง่ายขึ้น
+              {t.home.careJourneyHeadline}
             </h2>
           </div>
 
@@ -255,38 +308,9 @@ export default function HomePage() {
             ))}
           </div>
         </section>
-
-        {/* Status card */}
-        <section className="overflow-hidden rounded-[2rem] bg-slate-950 p-5 text-white shadow-xl shadow-slate-200">
-          {/* <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm text-slate-300">{t.home.careStatus}</p>
-              <h2 className="mt-2 text-2xl font-black">
-                {t.home.statusHeadline}
-              </h2>
-            </div>
-
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/10 text-2xl">
-              💚
-            </div>
-          </div>
-
-          <p className="mt-3 text-sm leading-6 text-slate-300">
-            {t.home.statusDescription}
-          </p>
-
-          <div className="mt-5 rounded-[1.4rem] bg-white/10 p-4">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300">Care progress</span>
-              <span className="font-bold text-emerald-300">76%</span>
-            </div>
-
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-              <div className="h-full w-[76%] rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300" />
-            </div>
-          </div> */}
-        </section>
       </div>
+
+      <BottomNavbar />
     </main>
   );
 }

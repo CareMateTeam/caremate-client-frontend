@@ -1,20 +1,37 @@
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
-import { verifySession } from "@/libs/auth";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("caremate_session")?.value;
+const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
-  if (!token) {
-    return NextResponse.json({ user: null }, { status: 401 });
+export async function GET(req: NextRequest) {
+  try {
+    if (!BACKEND_API_URL) {
+      return NextResponse.json(
+        { message: "BACKEND_API_URL is not configured" },
+        { status: 500 },
+      );
+    }
+
+    const cookie = req.headers.get("cookie") ?? "";
+
+    const backendRes = await fetch(`${BACKEND_API_URL}/authentication/me`, {
+      method: "GET",
+      headers: {
+        Cookie: cookie,
+      },
+      cache: "no-store",
+    });
+
+    const data = await backendRes.json().catch(() => null);
+
+    return NextResponse.json(data, {
+      status: backendRes.status,
+    });
+  } catch (error) {
+    console.error("Auth me proxy error:", error);
+
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 },
+    );
   }
-
-  const user = await verifySession(token);
-
-  if (!user) {
-    return NextResponse.json({ user: null }, { status: 401 });
-  }
-
-  return NextResponse.json({ user });
 }

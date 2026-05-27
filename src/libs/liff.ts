@@ -8,7 +8,7 @@ export function initLiff() {
       liffId: process.env.NEXT_PUBLIC_LIFF_ID!,
     });
   }
-  console.log("LIFF ID:", process.env.NEXT_PUBLIC_LIFF_ID);
+  // console.log("LIFF ID:", process.env.NEXT_PUBLIC_LIFF_ID);
 
   return liffReady;
 }
@@ -19,10 +19,8 @@ export function isLiffLoggedIn() {
 
 export function loginWithLiff() {
   const redirectUri = `${window.location.origin}/login`;
-
-  console.log("CALL liff.login");
-  console.log("redirectUri:", redirectUri);
-
+  // console.log("CALL liff.login");
+  // console.log("redirectUri:", redirectUri);
   liff.login({
     redirectUri,
   });

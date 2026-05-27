@@ -12,6 +12,47 @@ import { useI18n } from "@/libs/i18n/i18n-provider";
 
 type AuthStatus = "loading" | "redirecting" | "success" | "error";
 
+type LineLoginPayload = {
+  status: "LOGIN_SUCCESS" | "REGISTER_REQUIRED";
+  registrationToken?: string;
+  user?: {
+    id: string;
+    lineId: string;
+    name: string;
+    avatarUrl: string;
+  };
+  lineProfile?: {
+    lineId: string;
+    name: string;
+    picture: string;
+    email: string;
+  };
+};
+
+function unwrapApiData<T>(data: unknown): T {
+  const maybeWrapped = data as {
+    data?: T;
+    Data?: T;
+    result?: T;
+  };
+
+  return (
+    maybeWrapped?.data ??
+    maybeWrapped?.Data ??
+    maybeWrapped?.result ??
+    (data as T)
+  );
+}
+
+function getErrorMessage(data: unknown, fallback: string) {
+  const value = data as {
+    message?: string;
+    error?: string;
+  } | null;
+
+  return value?.message ?? value?.error ?? fallback;
+}
+
 export default function LiffAuthProvider() {
   const router = useRouter();
   const hasRun = useRef(false);
@@ -60,13 +101,44 @@ export default function LiffAuthProvider() {
         const data = await res.json().catch(() => null);
 
         if (!res.ok) {
-          throw new Error(data?.message ?? t.auth.loginFailed);
+          throw new Error(getErrorMessage(data, t.auth.loginFailed));
         }
 
-        setStatus("success");
-        setMessage(t.auth.successRedirect);
+        const payload = unwrapApiData<LineLoginPayload>(data);
 
-        router.replace("/home");
+        if (payload.status === "REGISTER_REQUIRED") {
+          if (!payload.registrationToken) {
+            throw new Error("registrationToken not found");
+          }
+
+          sessionStorage.setItem(
+            "caremate_registration_token",
+            payload.registrationToken,
+          );
+
+          if (payload.lineProfile) {
+            sessionStorage.setItem(
+              "caremate_line_profile",
+              JSON.stringify(payload.lineProfile),
+            );
+          }
+
+          setStatus("success");
+          setMessage(t.auth.successRedirect);
+
+          router.replace("/register");
+          return;
+        }
+
+        if (payload.status === "LOGIN_SUCCESS") {
+          setStatus("success");
+          setMessage(t.auth.successRedirect);
+
+          router.replace("/home");
+          return;
+        }
+
+        throw new Error("Unknown authentication status");
       } catch (err) {
         console.error("LIFF auth error:", err);
 
@@ -76,7 +148,7 @@ export default function LiffAuthProvider() {
     };
 
     handleLogin();
-  }, [router]);
+  }, [router, t]);
 
   const isError = status === "error";
   const isSuccess = status === "success";

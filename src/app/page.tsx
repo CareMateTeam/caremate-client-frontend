@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/libs/i18n/i18n-provider";
-import IntroBackground from "@/components/home/intro-background";
-import IntroHeader from "@/components/home/intro-header";
-import IntroContent from "@/components/home/intro-content";
-import IntroFeatureGrid from "@/components/home/intro-feature-grid";
-import IntroFooter from "@/components/home/intro-footer";
-import IntroHeroVisual from "@/components/home/intro-hero-visual";
+import IntroBackground from "@/components/intro/intro-background";
+import IntroHeader from "@/components/intro/intro-header";
+import IntroContent from "@/components/intro/intro-content";
+import IntroFeatureGrid from "@/components/intro/intro-feature-grid";
+import IntroFooter from "@/components/intro/intro-footer";
+import IntroHeroVisual from "@/components/intro/intro-hero-visual";
 
 export default function IntroPage() {
   const router = useRouter();

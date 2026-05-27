@@ -1,3 +1,4 @@
+// src/app/api/auth/register-with-line/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const backendRes = await fetch(
-      `${BACKEND_API_URL}/authentication/line-login`,
+      `${BACKEND_API_URL}/authentication/register-with-line`,
       {
         method: "POST",
         headers: {
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     return res;
   } catch (error) {
-    console.error("LINE login proxy error:", error);
+    console.error("Register with LINE proxy error:", error);
 
     return NextResponse.json(
       { message: "Internal server error" },
