@@ -18,7 +18,7 @@ type RegisterForm = {
   emergencyContactName: string;
   emergencyContactPhone: string;
   careNote: string;
-  username:string
+  username: string;
 };
 
 type LineProfile = {
@@ -30,7 +30,7 @@ type LineProfile = {
 
 const initialForm: RegisterForm = {
   firstName: "",
-  username:"",
+  username: "",
   lastName: "",
   phone: "",
   email: "",
@@ -135,7 +135,7 @@ export default function RegisterPage() {
         credentials: "include",
         body: JSON.stringify({
           registrationToken,
-          username:form.username.trim(),
+          username: form.username.trim(),
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
           nickname: null,
@@ -185,7 +185,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 px-5 py-6">
+    <div className=" px-5 py-6">
       <div className="mx-auto max-w-md space-y-6">
         <header className="rounded-[2rem] bg-gradient-to-br from-emerald-500 to-teal-500 p-6 text-white shadow-lg shadow-emerald-100">
           <div className="flex items-start justify-between">
@@ -396,7 +396,7 @@ export default function RegisterPage() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }
 

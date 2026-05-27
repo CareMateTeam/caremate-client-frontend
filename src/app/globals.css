@@ -1,26 +1,78 @@
 @import "tailwindcss";
-/* 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+.caremate-app-bg {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(34, 211, 238, 0.35), transparent 32%),
+    radial-gradient(circle at 88% 18%, rgba(14, 165, 233, 0.28), transparent 30%),
+    radial-gradient(circle at 50% 100%, rgba(45, 212, 191, 0.28), transparent 35%),
+    linear-gradient(180deg, #f0f9ff 0%, #ecfeff 48%, #f0fdfa 100%);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.caremate-app-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(8, 145, 178, 0.28) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+  opacity: 0.95;
+  z-index: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.caremate-app-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(14, 165, 233, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.11) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: 0.8;
+  z-index: 0;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-} */
+.caremate-fixed-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+
+  background:
+    radial-gradient(circle at 12% 10%, rgba(187, 247, 208, 0.95), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(186, 230, 253, 0.75), transparent 30%),
+    radial-gradient(circle at 50% 100%, rgba(251, 207, 232, 0.6), transparent 34%),
+    linear-gradient(180deg, #f0f9ff 0%, #ecfeff 48%, #fdf2f8 100%);
+}
+
+.caremate-fixed-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background-image: radial-gradient(
+    circle,
+    rgba(8, 145, 178, 0.28) 1.3px,
+    transparent 1.3px
+  );
+  background-size: 18px 18px;
+  opacity: 0.55;
+}
+
+.caremate-fixed-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(rgba(14, 165, 233, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 184, 166, 0.1) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: 0.45;
+}
