@@ -1,9 +1,11 @@
 "use client";
 import {
+  Bell,
   CalendarRange,
   MessageCircleMore,
   SquareMenu,
   UserRound,
+  UsersRound,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,10 +24,20 @@ export function BottomNavbar() {
       label: "Booking",
       icon: <CalendarRange className="h-5 w-5" />,
     },
+    // {
+    //   href: "/chat",
+    //   label: "Chat",
+    //   icon: <MessageCircleMore className="h-5 w-5" />,
+    // },
     {
-      href: "/chat",
-      label: "Chat",
-      icon: <MessageCircleMore className="h-5 w-5" />,
+      href: "/members",
+      label: "Members",
+      icon: <UsersRound className="h-5 w-5" />,
+    },
+    {
+      href: "/notifications",
+      label: "Notification",
+      icon: <Bell className="h-5 w-5" />,
     },
     {
       href: "/profile",
@@ -41,7 +53,7 @@ export function BottomNavbar() {
        border-gray-200 bg-white/90 p-2 shadow-2xl 
        backdrop-blur-xl"
       >
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-5 gap-1">
           {menus.map((item) => {
             const isActive = pathname.startsWith(item.href);
 
@@ -50,7 +62,7 @@ export function BottomNavbar() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center justify-center 
-                    rounded-[1.3rem] px-2 py-2 text-xs font-bold transition ${
+                    rounded-[1.3rem] px-1 py-2 text-xs font-bold transition ${
                       isActive
                         ? "bg-emerald-500 text-white shadow-lg shadow-emerald-100"
                         : "text-slate-400 hover:bg-emerald-50 hover:text-emerald-600"

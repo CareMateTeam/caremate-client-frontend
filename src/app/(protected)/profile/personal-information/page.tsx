@@ -7,7 +7,8 @@ import {
   unwrapApiData,
 } from "@/libs/user/map-user-profile";
 import { useEffect, useState } from "react";
-
+import { useRouter } from "next/navigation";
+import SaveSuccessPopUp from "@/components/card/save-success-pop-up";
 type PersonalInformationForm = {
   firstName: string;
   lastName: string;
@@ -49,6 +50,9 @@ export default function PersonalInformationPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [editingBirthDate, setEditingBirthDate] = useState(false);
+
+  const router = useRouter();
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   useEffect(() => {
     const fetchMe = async () => {
       try {
@@ -105,41 +109,61 @@ export default function PersonalInformationPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // try {
-    //   setSaving(true);
-    //   setMessage("");
+    try {
+      setSaving(true);
+      setMessage("");
 
-    //   const payload = {
-    //     firstName: form.firstName.trim(),
-    //     lastName: form.lastName.trim(),
-    //     phone: form.phone.trim(),
-    //     dateOfBirth: form.dateOfBirth,
-    //     gender: form.gender,
-    //     email: form.email.trim(),
-    //   };
+      if (!form.firstName.trim()) {
+        setMessage("กรุณากรอกชื่อจริง");
+        return;
+      }
 
-    //   const res = await fetch("/api/auth/me", {
-    //     method: "PATCH",
-    //     credentials: "include",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(payload),
-    //   });
+      if (!form.lastName.trim()) {
+        setMessage("กรุณากรอกนามสกุล");
+        return;
+      }
 
-    //   const data = await res.json().catch(() => null);
+      if (!form.phone.trim()) {
+        setMessage("กรุณากรอกเบอร์โทร");
+        return;
+      }
 
-    //   if (!res.ok) {
-    //     throw new Error(data?.message ?? "Failed to update profile");
-    //   }
+      const payload = {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        phone: form.phone.trim(),
+        dateOfBirth: form.dateOfBirth,
+        gender: form.gender,
+        email: form.email.trim(),
+      };
 
-    //   setMessage("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
-    // } catch (error) {
-    //   console.error("Update personal information error:", error);
-    //   setMessage("บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
-    // } finally {
-    //   setSaving(false);
-    // }
+      const res = await fetch("/api/user/personal-information", {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        throw new Error(data?.message ?? "Failed to update profile");
+      }
+
+      setMessage("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
+
+      setShowSuccessPopup(true);
+      window.setTimeout(() => {
+        router.replace("/profile");
+      }, 1000);
+    } catch (error) {
+      console.error("Update personal information error:", error);
+      setMessage("บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -299,6 +323,13 @@ export default function PersonalInformationPage() {
           </button>
         </div>
       </form>
+      {showSuccessPopup ? (
+        <SaveSuccessPopUp
+          label="ข้อมูลส่วนตัว"
+          backto="หน้าโปรไฟล์"
+          backtoHref="/profile"
+        />
+      ) : null}
     </div>
   );
 }

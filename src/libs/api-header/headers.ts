@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
-export async function buildAuthHeaders() {
+export async function   buildAuthHeaders() {
   const requestHeaders = await headers();
 
   const cookie = requestHeaders.get("cookie");
@@ -11,6 +11,7 @@ export async function buildAuthHeaders() {
 
   const backendHeaders: HeadersInit = {
     Accept: "application/json",
+    "Content-Type": "application/json",
   };
 
   if (cookie) {

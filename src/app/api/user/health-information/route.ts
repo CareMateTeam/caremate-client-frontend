@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     if (!BACKEND_API_URL) {
       return NextResponse.json(
@@ -20,30 +20,30 @@ export async function GET() {
 
     const authHeaders = await buildAuthHeaders();
 
-    const res = await fetch(getBackendUrl("/users/address"), {
-      method: "GET",
-      headers: authHeaders,
-      cache: "no-store",
-    });
+    const backendRes = await fetch(
+      getBackendUrl("/users/health-information"),
+      {
+        method: "GET",
+        headers: authHeaders,
+        cache: "no-store",
+      },
+    );
 
-    const data = await safeJson(res);
+    const data = await safeJson(backendRes);
 
     return NextResponse.json(data, {
-      status: res.status,
+      status: backendRes.status,
     });
   } catch (error) {
-    console.error("GET /api/user/address error:", error);
+    console.error("GET /api/user/health-information error:", error);
 
     return NextResponse.json(
-      {
-        message: "Failed to fetch user address",
-      },
-      {
-        status: 500,
-      },
+      { message: "Failed to fetch health information" },
+      { status: 500 },
     );
   }
 }
+
 export async function PATCH(req: NextRequest) {
   try {
     if (!BACKEND_API_URL) {
@@ -53,16 +53,18 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const cookie = req.headers.get("cookie") ?? "";
+    const authHeaders = await buildAuthHeaders();
     const body = await req.json();
 
-    const authHeaders = await buildAuthHeaders();
-    const backendRes = await fetch(getBackendUrl("/users/address"), {
-      method: "PATCH",
-      headers: authHeaders,
-      body: JSON.stringify(body),
-      cache: "no-store",
-    });
+    const backendRes = await fetch(
+      getBackendUrl(`/users/health-information`),
+      {
+        method: "PATCH",
+        headers: authHeaders,
+        body: JSON.stringify(body),
+        cache: "no-store",
+      },
+    );
 
     const data = await safeJson(backendRes);
 
@@ -70,10 +72,10 @@ export async function PATCH(req: NextRequest) {
       status: backendRes.status,
     });
   } catch (error) {
-    console.error("PATCH /api/user/address error:", error);
+    console.error("PATCH /api/user/health-information error:", error);
 
     return NextResponse.json(
-      { message: "Failed to update user address" },
+      { message: "Failed to update health information" },
       { status: 500 },
     );
   }

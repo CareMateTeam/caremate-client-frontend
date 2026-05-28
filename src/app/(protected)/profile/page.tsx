@@ -1,7 +1,9 @@
 "use client";
 
+import PdpaPolicyPopup from "@/components/card/pdpa-policy-popup";
 import { TopUserInformation } from "@/components/card/user-information";
 import { TopUserInformationSkeleton } from "@/components/card/user-skelton";
+import { InfoRow } from "@/components/format/info-rows";
 import { menuItems } from "@/constants/profile";
 import { UserInformation, UserProfileResponse } from "@/dto/user";
 import {
@@ -89,7 +91,7 @@ export default function ProfilePage() {
         ))}
       </section> */}
 
-      <section className="rounded-[2rem] border border-white/80 bg-white/85 p-5 shadow-sm">
+      <section className="rounded-lg border border-white/80 bg-white/85 p-5 shadow-sm">
         <h2 className="text-lg font-bold text-slate-950">ข้อมูลบัญชี</h2>
 
         <div className="mt-4 space-y-3">
@@ -109,7 +111,7 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-950">เมนูของฉัน</h2>
           <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold text-cyan-700">
-            Account
+            เลือกเพื่อแก้ไขข้อมูลส่วนตัว
           </span>
         </div>
 
@@ -118,10 +120,10 @@ export default function ProfilePage() {
             <Link
               key={item.title}
               href={item.href}
-              className="block w-full rounded-3xl border border-white/80 bg-white/85 p-4 text-left shadow-sm transition hover:border-cyan-200 hover:bg-white active:scale-[0.99]"
+              className="block w-full rounded-lg border border-white/80 bg-white/85 p-4 text-left shadow-sm transition hover:border-cyan-200 hover:bg-white active:scale-[0.99]"
             >
               <div className="flex items-center gap-4">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-50 text-2xl">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-100 text-2xl">
                   {item.icon}
                 </div>
 
@@ -138,24 +140,13 @@ export default function ProfilePage() {
           ))}
         </div>
       </section>
-
-      <button
+      <PdpaPolicyPopup />
+      {/* <button
         type="button"
         className="h-12 w-full rounded-2xl border border-red-100 bg-red-50 text-sm font-bold text-red-600 transition hover:bg-red-100 active:scale-[0.99]"
       >
         ออกจากระบบ
-      </button>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50 px-4 py-3">
-      <span className="text-sm text-slate-500">{label}</span>
-      <span className="truncate text-right text-sm font-semibold text-slate-800">
-        {value}
-      </span>
+      </button> */}
     </div>
   );
 }
