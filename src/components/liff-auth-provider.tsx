@@ -1,5 +1,5 @@
 "use client";
-
+import liff from "@line/liff";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -70,6 +70,19 @@ export default function LiffAuthProvider() {
         setStatus("loading");
         setMessage(t.auth.connecting);
 
+        const meRes = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (meRes.ok) {
+          setStatus("success");
+          setMessage(t.auth.successRedirect);
+          router.replace("/home");
+          return;
+        }
+
         await initLiff();
 
         if (!isLiffLoggedIn()) {
@@ -80,11 +93,24 @@ export default function LiffAuthProvider() {
         }
 
         setMessage(t.auth.verifying);
+        const decoded = liff.getDecodedIDToken();
+
+        if (!decoded?.exp || decoded.exp * 1000 < Date.now()) {
+          liff.logout();
+
+          setStatus("redirecting");
+          setMessage(t.auth.redirecting);
+
+          loginWithLiff();
+          return;
+        }
 
         const idToken = getLiffIdToken();
 
         if (!idToken) {
-          throw new Error(t.auth.tokenNotFound);
+          liff.logout();
+          loginWithLiff();
+          return;
         }
 
         setMessage(t.auth.creatingSession);
@@ -95,12 +121,17 @@ export default function LiffAuthProvider() {
             "Content-Type": "application/json",
           },
           credentials: "include",
+          cache: "no-store",
           body: JSON.stringify({ idToken }),
         });
 
         const data = await res.json().catch(() => null);
 
         if (!res.ok) {
+          if (res.status === 401 || res.status === 400) {
+            liff.logout();
+          }
+
           throw new Error(getErrorMessage(data, t.auth.loginFailed));
         }
 

@@ -31,6 +31,9 @@ export async function POST(req: NextRequest) {
       status: backendRes.status,
     });
 
+    if (backendRes.status === 401) {
+      res.cookies.delete("caremate_session");
+    }
     const setCookie = backendRes.headers.get("set-cookie");
 
     if (setCookie) {

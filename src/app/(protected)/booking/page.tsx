@@ -1,115 +1,158 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useI18n } from "@/libs/i18n/i18n-provider";
+import LanguageSwitcher from "@/components/language-switcher";
+import { unwrapApiData } from "@/libs/user/map-user-profile";
+import { BackendCareService, CareServicesData } from "@/dto/service";
 
-type ServiceType = {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  icon: string;
+const serviceIconMap: Record<string, string> = {
+  home: "🏠",
+  activity: "🏃",
+  stethoscope: "🩺",
+  pill: "💊",
+  therapy: "🧘",
+  car: "🚗",
 };
 
-type Caregiver = {
-  id: string;
-  name: string;
-  role: string;
-  rating: number;
-  experience: string;
-  pricePerHour: number;
-  available: boolean;
-};
+function getServiceIcon(iconName?: string | null) {
+  if (!iconName) return "💙";
+  return serviceIconMap[iconName] ?? "💙";
+}
 
-const services: ServiceType[] = [
-  {
-    id: "home-care",
-    title: "ดูแลผู้ป่วยที่บ้าน",
-    description: "ผู้ดูแลไปดูแลที่บ้าน เหมาะสำหรับผู้สูงอายุหรือผู้ป่วยพักฟื้น",
-    price: 350,
-    icon: "🏠",
-  },
-  {
-    id: "hospital-care",
-    title: "เฝ้าไข้ที่โรงพยาบาล",
-    description: "ช่วยดูแลระหว่างนอนโรงพยาบาล พร้อมประสานงานเบื้องต้น",
-    price: 450,
-    icon: "🏥",
-  },
-  {
-    id: "daily-assist",
-    title: "ช่วยเหลือรายวัน",
-    description: "ช่วยเดินทาง ซื้อของ รับยา หรือดูแลกิจวัตรประจำวัน",
-    price: 300,
-    icon: "🤝",
-  },
-];
-
-const caregivers: Caregiver[] = [
-  {
-    id: "cg-1",
-    name: "คุณมะลิ",
-    role: "Caregiver ผู้สูงอายุ",
-    rating: 4.9,
-    experience: "5 ปี",
-    pricePerHour: 350,
-    available: true,
-  },
-  {
-    id: "cg-2",
-    name: "คุณอร",
-    role: "ผู้ช่วยพยาบาล",
-    rating: 4.8,
-    experience: "7 ปี",
-    pricePerHour: 450,
-    available: true,
-  },
-  {
-    id: "cg-3",
-    name: "คุณนิด",
-    role: "ดูแลผู้ป่วยพักฟื้น",
-    rating: 4.7,
-    experience: "4 ปี",
-    pricePerHour: 380,
-    available: false,
-  },
-];
-
-const timeSlots = [
-  "08:00 - 12:00",
-  "12:00 - 16:00",
-  "16:00 - 20:00",
-  "20:00 - 00:00",
-];
+function formatMoney(value: number) {
+  return new Intl.NumberFormat("th-TH", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 export default function BookingPage() {
+  const router = useRouter();
   const { t } = useI18n();
 
-  const today = new Date().toISOString().slice(0, 10);
+  const [services, setServices] = useState<BackendCareService[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+  const [serviceError, setServiceError] = useState("");
 
-  const [selectedServiceId, setSelectedServiceId] = useState("home-care");
-  const [selectedCaregiverId, setSelectedCaregiverId] = useState("cg-1");
-  const [selectedTime, setSelectedTime] = useState(timeSlots[0]);
-  const [date, setDate] = useState(today);
-  const [address, setAddress] = useState("");
-  const [note, setNote] = useState("");
+  const [selectedServiceId, setSelectedServiceId] = useState("");
+  const [selectionSettled, setSelectionSettled] = useState(false);
 
-  const selectedService = useMemo(
-    () => services.find((item) => item.id === selectedServiceId) ?? services[0],
-    [selectedServiceId],
-  );
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoadingServices(true);
+        setServiceError("");
 
-  const selectedCaregiver = useMemo(
-    () =>
-      caregivers.find((item) => item.id === selectedCaregiverId) ??
-      caregivers[0],
-    [selectedCaregiverId],
-  );
+        const res = await fetch("/api/service", {
+          method: "GET",
+          cache: "no-store",
+        });
 
-  const totalPrice = selectedCaregiver.pricePerHour * 4;
+        const json = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          throw new Error(json?.message ?? "Failed to fetch services");
+        }
+
+        const serviceData = unwrapApiData<CareServicesData>(json);
+        const serviceList = serviceData.services ?? [];
+
+        setServices(serviceList);
+
+        // ไม่ต้อง auto select แล้วครับ
+        // ให้ user เป็นคนกดเลือกเอง
+        setSelectedServiceId("");
+      } catch (error) {
+        console.error("Fetch care services error:", error);
+        setServiceError("ไม่สามารถโหลดข้อมูลบริการได้");
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedServiceId) {
+      setSelectionSettled(false);
+      return;
+    }
+
+    setSelectionSettled(false);
+
+    const timer = window.setTimeout(() => {
+      setSelectionSettled(true);
+    }, 280);
+
+    return () => window.clearTimeout(timer);
+  }, [selectedServiceId]);
+
+  const selectedService = useMemo(() => {
+    return services.find((service) => service.id === selectedServiceId) ?? null;
+  }, [services, selectedServiceId]);
+
+  const displayServices = useMemo(() => {
+    if (!selectedServiceId) return services;
+
+    const selected = services.find((service) => service.id === selectedServiceId);
+    const others = services.filter((service) => service.id !== selectedServiceId);
+
+    if (!selected) return services;
+
+    if (selectionSettled) {
+      return [selected];
+    }
+
+    return [selected, ...others];
+  }, [services, selectedServiceId, selectionSettled]);
+
+  const handleSelectService = (service: BackendCareService) => {
+    if (!service.is_active) return;
+
+    if (selectedServiceId === service.id) {
+      setSelectedServiceId("");
+      setSelectionSettled(false);
+      return;
+    }
+
+    setSelectedServiceId(service.id);
+  };
+
+  const handleContinueBooking = () => {
+    if (!selectedService) return;
+
+    router.push(
+      `/booking/detail?serviceId=${selectedService.id}&service=${selectedService.slug}`,
+    );
+  };
 
   return (
     <section className="mx-auto max-w-md space-y-6">
+      <header className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="overflow-hidden rounded-full bg-white p-1 shadow-lg">
+              <Image
+                src="/icon/caremate-icon.png"
+                alt="Caremate Icon"
+                width={32}
+                height={32}
+              />
+            </div>
+
+            <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950">
+              {t.common.appName}
+            </h1>
+          </div>
+        </div>
+
+        <LanguageSwitcher />
+      </header>
+
       <header className="rounded-[2rem] border border-white/80 bg-white/85 p-5 shadow-sm backdrop-blur">
         <div className="mb-5 flex items-center justify-between">
           <div>
@@ -132,259 +175,159 @@ export default function BookingPage() {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-950">
-            เลือกประเภทบริการ
-          </h2>
+          <div>
+            <h2 className="text-lg font-bold text-slate-950">
+              เลือกประเภทบริการ
+            </h2>
+            <p className="mt-1 text-xs text-slate-500">
+              {selectedService
+                ? "แตะการ์ดเดิมอีกครั้งเพื่อยกเลิกการเลือก"
+                : "เลือกบริการที่ต้องการให้ CareMate ช่วยดูแล"}
+            </p>
+          </div>
+
           <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold text-cyan-700">
-            Step 1
+            {selectedService ? "เลือกแล้ว" : `${services.length} บริการ`}
           </span>
         </div>
 
-        <div className="space-y-3">
-          {services.map((service) => {
-            const active = selectedServiceId === service.id;
-
-            return (
-              <button
-                key={service.id}
-                type="button"
-                onClick={() => setSelectedServiceId(service.id)}
-                className={[
-                  "w-full rounded-3xl border p-4 text-left transition",
-                  active
-                    ? "border-cyan-400 bg-white shadow-md shadow-cyan-100"
-                    : "border-white bg-white/75 shadow-sm hover:border-cyan-200",
-                ].join(" ")}
+        {loadingServices ? (
+          <div className="grid grid-cols-2 gap-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className="h-[168px] animate-pulse rounded-[1.75rem] border border-white bg-white/70 p-4 shadow-sm"
               >
-                <div className="flex gap-4">
-                  <div
+                <div className="mb-4 h-12 w-12 rounded-2xl bg-slate-100" />
+                <div className="mb-2 h-4 w-24 rounded-full bg-slate-100" />
+                <div className="h-3 w-16 rounded-full bg-slate-100" />
+                <div className="mt-5 h-6 w-20 rounded-full bg-slate-100" />
+              </div>
+            ))}
+          </div>
+        ) : serviceError ? (
+          <div className="rounded-3xl border border-red-100 bg-red-50 p-5 text-sm font-medium text-red-600">
+            {serviceError}
+          </div>
+        ) : services.length === 0 ? (
+          <div className="rounded-3xl border border-white bg-white/80 p-5 text-sm font-medium text-slate-500 shadow-sm">
+            ยังไม่มีข้อมูลบริการ
+          </div>
+        ) : (
+          <>
+            <div
+              className={[
+                "grid gap-3 transition-all duration-300",
+                selectedServiceId ? "grid-cols-1" : "grid-cols-2",
+              ].join(" ")}
+            >
+              {displayServices.map((service) => {
+                const active = selectedServiceId === service.id;
+                const disabled = !service.is_active;
+                const fadingOut = selectedServiceId && !active && !selectionSettled;
+
+                return (
+                  <button
+                    key={service.id}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => handleSelectService(service)}
                     className={[
-                      "grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-2xl",
-                      active ? "bg-cyan-100" : "bg-slate-100",
+                      "group relative overflow-hidden rounded-[1.75rem] border p-4 text-left transition-all duration-300 ease-out",
+                      selectedServiceId ? "min-h-[190px]" : "min-h-[168px]",
+                      disabled
+                        ? "cursor-not-allowed border-none bg-slate-100/80 opacity-70 shadow-sm"
+                        : active
+                          ? "scale-[1.01] border-cyan-400 bg-white shadow-lg"
+                          : "border-white bg-white shadow-md hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-white hover:shadow-md",
+                      fadingOut
+                        ? "pointer-events-none -translate-y-2 scale-95 opacity-0 blur-sm"
+                        : "translate-y-0 scale-100 opacity-100 blur-0",
                     ].join(" ")}
                   >
-                    {service.icon}
-                  </div>
+                    <div
+                      className={[
+                        "absolute -right-8 -top-8 h-24 w-24 rounded-full transition-all duration-300",
+                        active ? "bg-cyan-100" : "bg-slate-100",
+                      ].join(" ")}
+                    />
 
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-bold text-slate-950">
-                        {service.title}
-                      </h3>
-                      <p className="whitespace-nowrap text-sm font-bold text-cyan-700">
-                        ฿{service.price}/ชม.
-                      </p>
-                    </div>
+                    {active && (
+                      <div className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-cyan-500 text-xs font-bold text-white shadow-sm">
+                        ✓
+                      </div>
+                    )}
 
-                    <p className="mt-1 text-sm leading-6 text-slate-500">
-                      {service.description}
-                    </p>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+                    <div className="relative z-10 flex h-full flex-col">
+                      <div
+                        className={[
+                          "mb-4 grid h-12 w-12 place-items-center rounded-2xl text-2xl shadow-sm transition-all duration-300",
+                          active
+                            ? "bg-cyan-500 text-white"
+                            : "bg-cyan-50 text-slate-700 group-hover:bg-cyan-100",
+                        ].join(" ")}
+                      >
+                        {getServiceIcon(service.icon_name)}
+                      </div>
 
-      <section className="rounded-[2rem] border border-white bg-white/85 p-5 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-950">วันและเวลา</h2>
-          <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold text-cyan-700">
-            Step 2
-          </span>
-        </div>
-
-        <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">
-            วันที่ต้องการจอง
-          </span>
-          <input
-            type="date"
-            min={today}
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
-          />
-        </label>
-
-        <div className="mt-4">
-          <p className="mb-2 text-sm font-semibold text-slate-700">ช่วงเวลา</p>
-
-          <div className="grid grid-cols-2 gap-3">
-            {timeSlots.map((slot) => {
-              const active = selectedTime === slot;
-
-              return (
-                <button
-                  key={slot}
-                  type="button"
-                  onClick={() => setSelectedTime(slot)}
-                  className={[
-                    "h-12 rounded-2xl border text-sm font-semibold transition",
-                    active
-                      ? "border-cyan-400 bg-cyan-500 text-white shadow-md shadow-cyan-100"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-cyan-300",
-                  ].join(" ")}
-                >
-                  {slot}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-950">เลือกผู้ดูแล</h2>
-          <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold text-cyan-700">
-            Step 3
-          </span>
-        </div>
-
-        <div className="space-y-3">
-          {caregivers.map((caregiver) => {
-            const active = selectedCaregiverId === caregiver.id;
-
-            return (
-              <button
-                key={caregiver.id}
-                type="button"
-                disabled={!caregiver.available}
-                onClick={() => setSelectedCaregiverId(caregiver.id)}
-                className={[
-                  "w-full rounded-3xl border p-4 text-left transition",
-                  !caregiver.available
-                    ? "cursor-not-allowed border-slate-100 bg-slate-100 opacity-60"
-                    : active
-                      ? "border-cyan-400 bg-white shadow-md shadow-cyan-100"
-                      : "border-white bg-white/80 shadow-sm hover:border-cyan-200",
-                ].join(" ")}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-cyan-100 to-sky-100 text-xl font-bold text-cyan-700">
-                    {caregiver.name.slice(3, 4)}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h3 className="font-bold text-slate-950">
-                          {caregiver.name}
+                      <div className="min-h-[54px]">
+                        <h3 className="line-clamp-2 text-sm font-extrabold leading-5 text-slate-950">
+                          {service.name_th}
                         </h3>
-                        <p className="mt-1 text-sm text-slate-500">
-                          {caregiver.role}
+
+                        <p className="mt-1 line-clamp-1 text-[11px] font-medium text-slate-400">
+                          {service.name_en}
                         </p>
                       </div>
 
-                      <span
-                        className={[
-                          "rounded-full px-3 py-1 text-xs font-semibold",
-                          caregiver.available
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-slate-200 text-slate-500",
-                        ].join(" ")}
-                      >
-                        {caregiver.available ? "ว่าง" : "ไม่ว่าง"}
-                      </span>
+                      <div className="mt-auto pt-4">
+                        <div className="flex items-end justify-between gap-2">
+                          <div>
+                            <p className="text-[10px] font-medium text-slate-400">
+                              เริ่มต้น
+                            </p>
+                            <p
+                              className={[
+                                "text-base font-black",
+                                active ? "text-cyan-700" : "text-slate-900",
+                              ].join(" ")}
+                            >
+                              ฿{formatMoney(service.base_fee)}
+                            </p>
+                          </div>
+
+                          <span
+                            className={[
+                              "rounded-full px-2.5 py-1 text-[10px] font-bold",
+                              service.is_active
+                                ? "bg-emerald-50 text-emerald-600"
+                                : "bg-slate-200 text-slate-500",
+                            ].join(" ")}
+                          >
+                            {service.is_active ? "พร้อมให้บริการ" : "ไม่พร้อมให้บริการ"}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
-                      <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
-                        ⭐ {caregiver.rating}
-                      </span>
-                      <span className="rounded-full bg-slate-100 px-3 py-1">
-                        ประสบการณ์ {caregiver.experience}
-                      </span>
-                      <span className="rounded-full bg-cyan-50 px-3 py-1 text-cyan-700">
-                        ฿{caregiver.pricePerHour}/ชม.
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="rounded-[2rem] border border-white bg-white/85 p-5 shadow-sm">
-        <h2 className="mb-4 text-lg font-bold text-slate-950">
-          รายละเอียดเพิ่มเติม
-        </h2>
-
-        <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">
-            สถานที่ดูแล
-          </span>
-          <textarea
-            rows={3}
-            value={address}
-            onChange={(event) => setAddress(event.target.value)}
-            placeholder="เช่น บ้านเลขที่, คอนโด, โรงพยาบาล, ชั้น, ห้อง"
-            className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
-          />
-        </label>
-
-        <label className="mt-4 block">
-          <span className="mb-2 block text-sm font-semibold text-slate-700">
-            หมายเหตุถึงผู้ดูแล
-          </span>
-          <textarea
-            rows={3}
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            placeholder="เช่น ผู้ป่วยเดินไม่สะดวก, ต้องช่วยเตือนกินยา, มีอาหารที่แพ้"
-            className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
-          />
-        </label>
-      </section>
-
-      <section className="rounded-[2rem] border border-cyan-100 bg-cyan-950 p-5 text-white shadow-lg shadow-cyan-100">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold">สรุปการจอง</h2>
-          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
-            4 ชั่วโมง
-          </span>
-        </div>
-
-        <div className="space-y-3 text-sm">
-          <SummaryRow label="บริการ" value={selectedService.title} />
-          <SummaryRow label="ผู้ดูแล" value={selectedCaregiver.name} />
-          <SummaryRow label="วันที่" value={date || "-"} />
-          <SummaryRow label="เวลา" value={selectedTime} />
-        </div>
-
-        <div className="mt-5 border-t border-white/10 pt-4">
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="text-sm text-cyan-100">ยอดประมาณการ</p>
-              <p className="mt-1 text-xs text-cyan-200">
-                คิดจาก {selectedCaregiver.pricePerHour} บาท x 4 ชั่วโมง
-              </p>
+                  </button>
+                );
+              })}
             </div>
 
-            <p className="text-2xl font-extrabold">฿{totalPrice}</p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className="mt-5 h-13 w-full rounded-2xl bg-white px-5 py-4 text-sm font-bold text-cyan-900 shadow-sm transition hover:bg-cyan-50 active:scale-[0.99]"
-        >
-          ยืนยันการจอง
-        </button>
+            {selectedService && selectionSettled && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <button
+                  type="button"
+                  onClick={handleContinueBooking}
+                  className="mt-2 h-14 w-full rounded-2xl bg-cyan-500 px-5 text-sm font-extrabold text-white shadow-lg shadow-cyan-100 transition hover:bg-cyan-600 active:scale-[0.98]"
+                >
+                  กดเพื่อจองต่อ
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </section>
     </section>
-  );
-}
-
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-4">
-      <span className="text-cyan-100">{label}</span>
-      <span className="text-right font-semibold text-white">{value}</span>
-    </div>
   );
 }
