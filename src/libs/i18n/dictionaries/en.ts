@@ -19,7 +19,7 @@ const en = {
     smartCare: "Smart Care",
     fastAccess: "Fast Access",
     loginButton: "Login with LINE",
-    loginFooter: "Copyright © 2024 CareMate. All rights reserved.",
+    loginFooter: "Copyright © 2026 CareMate. All rights reserved.",
   },
   auth: {
     preparing: "Preparing secure login...",

@@ -203,10 +203,6 @@ export default function AddressesPage() {
       }
 
       setShowSuccessPopup(true);
-
-      window.setTimeout(() => {
-        router.replace("/profile");
-      }, 1200);
     } catch (error) {
       console.error("Save address error:", error);
       setMessage("บันทึกที่อยู่ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
@@ -320,7 +316,7 @@ export default function AddressesPage() {
               type="button"
               onClick={handleUseCurrentLocation}
               disabled={locating}
-              className="shrink-0 rounded-2xl bg-cyan-50 px-3 py-2 text-xs font-bold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-60"
+              className="shrink-0 rounded-2xl bg-cyan-50 px-3 py-2 shadow-md text-xs font-bold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {locating ? "กำลังระบุ..." : "ใช้ตำแหน่งปัจจุบัน"}
             </button>

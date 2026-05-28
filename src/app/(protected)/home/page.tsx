@@ -284,7 +284,7 @@ export default function HomePage() {
           {careSteps.map((step, index) => (
             <div key={step.title} className="flex gap-3">
               <div className="flex flex-col items-center">
-                <div className="grid h-8 w-8 place-items-center rounded-full bg-emerald-500 text-xs font-black text-white shadow-lg shadow-emerald-100">
+                <div className="grid px-3 py-1 h-fit w-fit place-items-center rounded-full bg-emerald-500 text-xs font-black text-white shadow-lg shadow-emerald-100">
                   {index + 1}
                 </div>
 

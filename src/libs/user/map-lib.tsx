@@ -18,3 +18,8 @@ export function getMapPosition(form: AddressForm): MapPosition | null {
     lng,
   };
 }
+
+export function optional(value: string) {
+  const trimmed = value.trim();
+  return trimmed === "" ? "" : trimmed;
+}

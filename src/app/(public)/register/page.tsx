@@ -5,29 +5,9 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/libs/i18n/i18n-provider";
 import LanguageSwitcher from "@/components/language-switcher";
 import AppBackground from "@/components/app-background";
+import { LineProfile, RegisterForm } from "@/dto/register";
+import { Field } from "@/components/input/field-lable";
 
-type RegisterForm = {
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  dateOfBirth: string;
-  gender: string;
-  registerAs: string;
-  addressLine: string;
-  province: string;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
-  careNote: string;
-  username: string;
-};
-
-type LineProfile = {
-  lineId: string;
-  name: string;
-  picture: string;
-  email: string;
-};
 
 const initialForm: RegisterForm = {
   firstName: "",
@@ -403,34 +383,6 @@ export default function RegisterPage() {
   );
 }
 
-function Field({
-  label,
-  placeholder,
-  type = "text",
-  value,
-  onChange,
-}: {
-  label: string;
-  placeholder?: string;
-  type?: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-xs font-semibold text-slate-600">
-        {label}
-      </span>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50"
-      />
-    </label>
-  );
-}
 
 function Select({
   label,

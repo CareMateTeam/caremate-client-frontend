@@ -21,7 +21,7 @@ const th: Dictionary = {
     smartCare: "ดูแลอัจฉริยะ",
     fastAccess: "เข้าถึงเร็ว",
     loginButton: "เข้าสู่ระบบด้วย LINE",
-    loginFooter: " Copyright © 2024 CareMate. All rights reserved.",
+    loginFooter: " Copyright © 2026 CareMate. All rights reserved.",
   },
   auth: {
     preparing: "กำลังเตรียมระบบเข้าสู่ระบบที่ปลอดภัย...",

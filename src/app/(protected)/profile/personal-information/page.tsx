@@ -155,9 +155,6 @@ export default function PersonalInformationPage() {
       setMessage("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
 
       setShowSuccessPopup(true);
-      window.setTimeout(() => {
-        router.replace("/profile");
-      }, 1000);
     } catch (error) {
       console.error("Update personal information error:", error);
       setMessage("บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");

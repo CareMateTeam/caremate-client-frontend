@@ -62,8 +62,6 @@ export default function BookingPage() {
 
         setServices(serviceList);
 
-        // ไม่ต้อง auto select แล้วครับ
-        // ให้ user เป็นคนกดเลือกเอง
         setSelectedServiceId("");
       } catch (error) {
         console.error("Fetch care services error:", error);

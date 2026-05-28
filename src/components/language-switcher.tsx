@@ -53,7 +53,7 @@ export default function LanguageSwitcher({
             className={
               "rounded-full px-3 py-1 transition " +
               (active
-                ? "bg-sky-500 text-white shadow"
+                ? "bg-gradient-to-br from-emerald-400 to-sky-600 text-white shadow"
                 : "text-sky-700 hover:bg-emerald-50")
             }
           >

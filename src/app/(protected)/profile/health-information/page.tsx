@@ -129,9 +129,6 @@ export default function HealthInformationPage() {
 
       setShowSuccessPopup(true);
 
-      window.setTimeout(() => {
-        router.replace("/profile");
-      }, 1200);
     } catch (error) {
       console.error("Update health information error:", error);
       setMessage("บันทึกข้อมูลสุขภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");

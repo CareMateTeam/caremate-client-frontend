@@ -62,9 +62,9 @@ export function BottomNavbar() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center justify-center 
-                    rounded-[1.3rem] px-1 py-2 text-xs font-bold transition ${
+                    rounded-xl px-1 py-2 text-xs font-bold transition ${
                       isActive
-                        ? "bg-emerald-500 text-white shadow-lg shadow-emerald-100"
+                        ? "bg-gradient-to-br from-emerald-400 to-sky-600 text-white shadow-lg shadow-emerald-100"
                         : "text-slate-400 hover:bg-emerald-50 hover:text-emerald-600"
                     }`}
               >

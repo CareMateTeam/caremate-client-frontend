@@ -4,7 +4,7 @@ type Props = {
 
 export default function AppBackground({ children }: Props) {
   return (
-    <main className="relative min-h-screen bg-transparent px-5 pb-28 pt-6 text-slate-900">
+    <main className="relative min-h-screen bg-transparent px-5 pb-28 pt-2 text-slate-900">
       {/* fixed background */}
       <div className="caremate-fixed-bg" />
 
