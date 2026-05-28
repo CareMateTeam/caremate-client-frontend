@@ -1,5 +1,0 @@
-
-
-function GET(){
-    return null
-}
