@@ -94,8 +94,8 @@ const en = {
     title: "Profile Page",
   },
   register: {
-    completeProfile: "Complete your profile",
-    title: "Register CareMate",
+    completeProfile: "Caremate",
+    title: "Register",
     intro:
       "Please provide your information so we can prepare safe and suitable care services for you.",
     firstName: "First name",

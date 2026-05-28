@@ -96,10 +96,10 @@ const th: Dictionary = {
     title: "หน้าโปรไฟล์",
   },
   register: {
-    completeProfile: "กรอกข้อมูลส่วนตัวให้ครบถ้วน",
-    title: "สมัครสมาชิก CareMate",
+    completeProfile: "Caremate",
+    title: "สมัครสมาชิก",
     intro:
-      "กรุณาให้ข้อมูลของคุณ เพื่อให้เราจัดเตรียมบริการดูแลที่ปลอดภัยและเหมาะสมกับคุณ",
+      "กรุณากรอกข้อมูลของคุณเพื่อสร้างบัญชี CareMate และเริ่มต้นการดูแลสุขภาพที่ง่ายและปลอดภัยผ่าน LINE",
     firstName: "ชื่อ",
     firstNamePlaceholder: "กรอกชื่อของคุณ",
     lastName: "นามสกุล",

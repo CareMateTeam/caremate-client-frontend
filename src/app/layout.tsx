@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import { I18nProvider } from "@/libs/i18n/i18n-provider";
 import {
   defaultLocale,
