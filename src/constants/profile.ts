@@ -21,7 +21,7 @@ export const menuItems = [
     title: "ผู้ป่วย / ผู้รับการดูแล",
     description: "จัดการข้อมูลคนในครอบครัวที่ต้องการดูแล",
     icon: "🫶",
-    href: "/profile/family-members",
+    href: "/members",
   },
   {
     title: "ประวัติการจอง",

@@ -8,6 +8,7 @@ import { useI18n } from "@/libs/i18n/i18n-provider";
 import { MAX_MEMBERS } from "@/constants/member";
 import { GetRelativesData, RelativeMember } from "@/dto/register";
 import { unwrapApiData } from "@/libs/user/map-user-profile";
+import { calculateAge } from "@/libs/user/map-lib";
 
 function getRelationshipLabel(value: string) {
   const map: Record<string, string> = {
@@ -29,10 +30,25 @@ function getInitials(member: RelativeMember) {
   return name.slice(0, 1);
 }
 
-function getDisplayName(member: RelativeMember) {
-  if (member.firstName) return member.firstName;
+function getGenderLabel(value?: string) {
+  const map: Record<string, string> = {
+    male: "ชาย",
+    female: "หญิง",
+    other: "อื่น ๆ",
+  };
 
-  return `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() || "-";
+  if (!value) return "-";
+  return map[value] ?? value;
+}
+
+function getDisplayName(member: RelativeMember) {
+
+  return `${member.firstName} ${member.lastName }`.trim() || "-";
+}
+
+function getFirstName(member: RelativeMember) {
+
+  return `${member.firstName}`.trim() || "-";
 }
 
 function getMemberNote(member: RelativeMember) {
@@ -134,7 +150,6 @@ export default function MembersPage() {
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
-
             <div className="rounded-xl grid place-items-center bg-cyan-50 p-4">
               <p className="text-xs font-bold text-cyan-600">จำนวนสมาชิก</p>
               <p className="mt-1 text-2xl font-black text-cyan-800">
@@ -145,7 +160,7 @@ export default function MembersPage() {
             <div className="rounded-xl grid place-items-center bg-emerald-50 p-4">
               <p className="text-xs font-bold text-emerald-600">ค่าเริ่มต้น</p>
               <p className="mt-1 truncate text-lg font-black text-emerald-800">
-                {defaultMember ? getDisplayName(defaultMember) : "ยังไม่มี"}
+                {defaultMember ? getFirstName(defaultMember) : "ยังไม่มี"}
               </p>
             </div>
           </div>
@@ -163,7 +178,8 @@ export default function MembersPage() {
             (canAddMore ? (
               <Link
                 href="/members/create"
-                className="rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-cyan-100 transition active:scale-[0.98]"
+                className="rounded-xl bg-gradient-to-br border border-gray-400 from-emerald-500 to-blue-500 px-4 py-3 
+                text-sm font-black text-white shadow-md shadow-gray-400 transition active:scale-[0.98]"
               >
                 เพิ่ม
               </Link>
@@ -218,72 +234,121 @@ export default function MembersPage() {
           <section className="space-y-3">
             {activeMembers.map((member) => {
               const note = getMemberNote(member);
+              const displayName = getDisplayName(member);
+              const relationshipLabel = getRelationshipLabel(
+                member.relationship,
+              );
 
               return (
-                <article
+                <Link
                   key={member.id}
-                  className="rounded-xl border border-white bg-white/90 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  href={`/members/${member.id}`}
+                  className="block w-full text-inherit no-underline"
                 >
-                  <div className="flex gap-4">
-                    <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-gradient-to-br from-cyan-100 to-sky-100 text-2xl font-black text-cyan-700">
-                      {getInitials(member)}
-                    </div>
+                  <article className="group relative overflow-hidden rounded-xl border border-white bg-white p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-100/70 active:scale-[0.99]">
+                    <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cyan-50 transition-all duration-300 group-hover:scale-125 group-hover:bg-cyan-100" />
+                    <div className="absolute -bottom-12 -left-12 h-28 w-28 rounded-full bg-emerald-50/70" />
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h4 className="truncate text-base font-black text-slate-950">
-                              {getDisplayName(member)}
-                            </h4>
-
-                            {member.isDefault && (
-                              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-700">
-                                หลัก
-                              </span>
-                            )}
+                    <div className="relative z-10">
+                      <div className="flex items-start gap-4">
+                        <div className="relative">
+                          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-gradient-to-br from-cyan-500 to-pink-200 text-2xl font-black text-white">
+                            {getInitials(member)}
                           </div>
 
-                          <p className="mt-1 text-sm font-semibold text-cyan-700">
-                            {getRelationshipLabel(member.relationship)}
-                          </p>
+                          {member.isDefault && (
+                            <div className="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full border-2 border-white bg-emerald-500 text-xs font-black text-white shadow-sm">
+                              ✓
+                            </div>
+                          )}
                         </div>
 
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
-                          #{member.seq}
-                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 w-full">
+                              <div className="flex w-full items-center justify-between gap-2">
+                                <h4 className="truncate text-lg font-black tracking-tight text-slate-950">
+                                  {displayName}
+                                </h4>
+
+                                {member.isDefault && (
+                                  <span className="shrink-0 rounded-full bg-emerald-100 px-4 py-1 text-xs font-black text-emerald-700 shadow-md animate-pulse">
+                                    สมาชิกหลัก
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="mt-1 flex flex-wrap items-center gap-2">
+                                <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-bold text-cyan-700">
+                                  {relationshipLabel}
+                                </span>
+
+                                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
+                                  ลำดับ #{member.seq}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                        <div className="rounded-2xl bg-slate-50 px-3 py-2">
-                          <p className="font-bold text-slate-400">เบอร์โทร</p>
-                          <p className="mt-1 truncate font-black text-slate-700">
-                            {member.phone || "-"}
-                          </p>
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        <div className="rounded-2xl border flex items-center justify-start  border-slate-100 bg-slate-100 px-3 py-1.5">
+                          <div className="flex items-center gap-4">
+                            <div className="grid h-8 w-8 place-items-center rounded-xl bg-white text-sm shadow-sm">
+                              🎂
+                            </div>
+
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-bold text-slate-400">
+                                อายุ
+                              </p>
+                              <p className="mt-0.5 truncate text-xs font-black text-slate-800">
+                                {calculateAge(member.dateOfBirth)} 
+                              </p>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="rounded-2xl bg-slate-50 px-3 py-2">
-                          <p className="font-bold text-slate-400">เพศ</p>
-                          <p className="mt-1 truncate font-black text-slate-700">
-                            {member.gender || "-"}
-                          </p>
+                        <div className="rounded-2xl border flex items-center justify-start border-slate-100 bg-slate-100 px-3 py-1.5">
+                          <div className="flex items-center gap-4">
+                            <div className="grid h-8 w-8 place-items-center rounded-xl bg-white text-sm shadow-sm">
+                              👤
+                            </div>
+
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-bold text-slate-400">
+                                เพศ
+                              </p>
+                              <p className="mt-0.5 truncate text-xs font-black text-slate-800">
+                                {getGenderLabel(member.gender)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
-
-                      {member.addressLine && (
-                        <p className="mt-3 line-clamp-2 rounded-2xl bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-600">
-                          {member.addressLine}
-                        </p>
-                      )}
 
                       {note && (
-                        <p className="mt-3 line-clamp-2 rounded-2xl bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-700">
-                          {note}
-                        </p>
+                        <div className="mt-3 rounded-2xl border border-amber-100 bg-amber-50 p-3">
+                          <div className="flex items-start gap-2">
+                            <div className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white text-sm shadow-sm">
+                              📝
+                            </div>
+
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-black text-amber-600">
+                                หมายเหตุการดูแล
+                              </p>
+                              <p className="mt-1 line-clamp-2 text-xs leading-5 text-amber-700">
+                                {note}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
-                  </div>
-                </article>
+                  </article>
+                </Link>
               );
             })}
           </section>

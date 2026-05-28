@@ -11,9 +11,11 @@ import {
 } from "@/constants/health-information";
 import { CreateRelativeForm } from "@/dto/register";
 import { MAX_MEMBERS } from "@/constants/member";
+import Image from "next/image";
 import { optional } from "@/libs/user/map-lib";
 import { Check } from "lucide-react";
 import SaveSuccessPopUp from "@/components/card/save-success-pop-up";
+import LanguageSwitcher from "@/components/language-switcher";
 
 const initialForm: CreateRelativeForm = {
   firstName: "",
@@ -163,8 +165,28 @@ export default function CreateMemberPage() {
   };
 
   return (
-    <section className="space-y-3">
-      <header className="rounded-2xl bg-gradient-to-br from-emerald-500 flex justify-between to-teal-500 p-6 text-white shadow-lg shadow-emerald-100">
+    <section className="space-y-3">  <header className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="overflow-hidden rounded-full bg-white p-1 shadow-lg">
+                <Image
+                  src="/icon/caremate-icon.png"
+                  alt="Caremate Icon"
+                  width={32}
+                  height={32}
+                />
+              </div>
+
+              <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950">
+                {t.common.appName}
+              </h1>
+            </div>
+          </div>
+
+          <LanguageSwitcher />
+        </header>
+
+      <section className="rounded-2xl bg-gradient-to-br from-cyan-500 to-sky-400 flex justify-between p-6 text-white shadow-lg shadow-emerald-100">
         <div className="grid">
           {" "}
           <p className="text-sm opacity-90">Family Member</p>
@@ -173,7 +195,7 @@ export default function CreateMemberPage() {
             กรอกข้อมูลสมาชิกหรือญาติที่ต้องการรับบริการดูแล
           </p>
         </div>
-      </header>
+      </section>
 
       <form
         className="space-y-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-100"

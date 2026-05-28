@@ -253,7 +253,7 @@ export default function PersonalInformationPage() {
                 </button>
               ) : null}
             </div>
-
+            
             {editingBirthDate || !form.dateOfBirth ? (
               <input
                 type="date"

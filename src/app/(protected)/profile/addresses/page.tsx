@@ -7,8 +7,6 @@ import { unwrapApiData } from "@/libs/user/map-user-profile";
 import { AddressForm } from "@/dto/user";
 import { getMapPosition } from "@/libs/user/map-lib";
 import { FormInput } from "@/components/input/form-input";
-import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
 import SaveSuccessPopUp from "@/components/card/save-success-pop-up";
 
 const MapPicker = dynamic(() => import("./map-picker"), {
@@ -38,7 +36,6 @@ export default function AddressesPage() {
   const [loading, setLoading] = useState(true);
   const position = getMapPosition(form);
 
-  const router = useRouter();
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   useEffect(() => {
