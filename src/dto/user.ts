@@ -5,6 +5,8 @@ export type UserInformation = {
   role: string;
   phone: string;
   memberStatus: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 export type UserProfileResponse = {

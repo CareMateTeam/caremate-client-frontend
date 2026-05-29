@@ -13,25 +13,27 @@ import {
   numberToInputValue,
   optional,
 } from "@/libs/user/map-lib";
-import { MapPosition } from "../../profile/addresses/map-picker";
-import { FormInput } from "@/components/input/form-input";
 import SaveSuccessPopUp from "@/components/card/save-success-pop-up";
 import { SelectField } from "@/components/input/select-field";
 import { FormTextarea } from "@/components/input/form-text-area";
-import { bloodTypeOptions } from "@/constants/health-information";
+import {
+  bloodTypeOptions,
+  genderOptions,
+  relationshipOptions,
+} from "@/constants/health-information";
 import dynamic from "next/dynamic";
+import { MapPosition } from "../../profile/addresses/map-picker";
+import { toDateInputValue } from "@/libs/general/date";
 
-const MapPicker = dynamic(
-  () => import("../../profile/addresses/map-picker"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="grid h-72 place-items-center rounded-2xl bg-slate-100 text-sm font-semibold text-slate-500">
-        กำลังโหลดแผนที่...
-      </div>
-    ),
-  },
-);
+const MapPicker = dynamic(() => import("../../profile/addresses/map-picker"), {
+  ssr: false,
+  loading: () => (
+    <div className="grid h-72 place-items-center rounded-2xl bg-slate-100 text-sm font-semibold text-slate-500">
+      กำลังโหลดแผนที่...
+    </div>
+  ),
+});
+
 const initialForm: MemberSettingForm = {
   firstName: "",
   lastName: "",
@@ -58,43 +60,6 @@ const initialForm: MemberSettingForm = {
   careNote: "",
   isDefault: false,
 };
-
-const genderOptions = [
-  { value: "", label: "เลือกเพศ" },
-  { value: "male", label: "ชาย" },
-  { value: "female", label: "หญิง" },
-  { value: "other", label: "อื่น ๆ" },
-];
-
-const relationshipOptions = [
-  { value: "", label: "เลือกความสัมพันธ์" },
-  { value: "father", label: "พ่อ" },
-  { value: "mother", label: "แม่" },
-  { value: "grandfather", label: "ปู่ / ตา" },
-  { value: "grandmother", label: "ย่า / ยาย" },
-  { value: "sibling", label: "พี่น้อง" },
-  { value: "child", label: "ลูก" },
-  { value: "spouse", label: "คู่สมรส" },
-  { value: "other", label: "อื่น ๆ" },
-];
-
-const registerAsOptions = [
-  { value: "", label: "เลือกประเภท" },
-  { value: "client", label: "ผู้รับบริการ" },
-  { value: "caregiver", label: "ผู้ดูแล" },
-];
-
-function toDateInputValue(value?: string | null) {
-  if (!value) return "";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value.slice(0, 10);
-  }
-
-  return date.toISOString().slice(0, 10);
-}
 
 export default function MemberSettingPage() {
   const router = useRouter();
@@ -395,7 +360,7 @@ export default function MemberSettingPage() {
           <LanguageSwitcher />
         </header>
 
-        <section className="rounded-xl bg-gradient-to-br from-cyan-500 to-sky-400 p-5 text-white shadow-lg shadow-cyan-100">
+        <section className="rounded-xl bg-gradient-to-br from-cyan-500 to-sky-300 p-5 text-white shadow-md shadow-sky-300">
           <p className="text-sm font-bold text-white/80">Member Setting</p>
           <h2 className="mt-1 text-2xl font-black">ตั้งค่าสมาชิก</h2>
           <p className="mt-2 text-sm leading-6 text-white/90">
@@ -458,7 +423,7 @@ export default function MemberSettingPage() {
                 />
               </div>
               <div className="block">
-                <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="mb-2 mt-3 flex items-center justify-between gap-3">
                   <span className="block text-sm font-semibold text-slate-700">
                     วันเกิด
                   </span>
@@ -505,19 +470,12 @@ export default function MemberSettingPage() {
                 />
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="mt-4 grid gap-3">
                 <SelectField
                   label="ความสัมพันธ์"
                   value={form.relationship}
                   onChange={(value) => updateForm("relationship", value)}
                   options={relationshipOptions}
-                />
-
-                <SelectField
-                  label="สมัครในฐานะ"
-                  value={form.registerAs}
-                  onChange={(value) => updateForm("registerAs", value)}
-                  options={registerAsOptions}
                 />
               </div>
 
@@ -525,9 +483,9 @@ export default function MemberSettingPage() {
                 type="button"
                 onClick={() => updateForm("isDefault", !form.isDefault)}
                 className={[
-                  "mt-5 flex w-full items-center justify-between rounded-3xl border p-4 text-left transition",
+                  "mt-5 flex w-full items-center justify-between rounded-xl border p-4 text-left transition",
                   form.isDefault
-                    ? "border-emerald-300 bg-emerald-50"
+                    ? "border-emerald-400 bg-emerald-100"
                     : "border-slate-200 bg-white",
                 ].join(" ")}
               >
@@ -576,7 +534,7 @@ export default function MemberSettingPage() {
 
               <MapPicker position={position} onChange={updatePosition} />
 
-              <div className=" grid grid-cols-2 gap-3">
+              {/* <div className=" grid grid-cols-2 gap-3">
                 <FormInput
                   label="Latitude"
                   value={form.latitude}
@@ -592,7 +550,7 @@ export default function MemberSettingPage() {
                   inputMode="decimal"
                   onChange={(value) => updateForm("longitude", value)}
                 />
-              </div>
+              </div> */}
 
               <div className="rounded-2xl bg-cyan-50 px-4 py-3 text-xs leading-5 text-cyan-800">
                 แนะนำให้กด “ใช้ตำแหน่งปัจจุบัน” ก่อน แล้วค่อยขยับหมุดบนแผนที่
@@ -744,29 +702,11 @@ export default function MemberSettingPage() {
                 />
               </div>
             </section>
-
-            <section className="rounded-xl border border-red-100 bg-red-50 p-5">
-              <h3 className="text-lg font-black text-red-700">ลบสมาชิก</h3>
-              <p className="mt-2 text-sm leading-6 text-red-600">
-                เมื่อลบแล้ว
-                สมาชิกคนนี้จะไม่แสดงในรายการและไม่สามารถเลือกใช้ในการจองได้
-              </p>
-
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={deleting}
-                className="mt-4 h-12 w-full rounded-2xl bg-red-500 text-sm font-black text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-red-200"
-              >
-                {deleting ? "กำลังลบ..." : "ลบสมาชิกนี้"}
-              </button>
-            </section>
-
             <footer className="sticky bottom-4 z-20 flex gap-3">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="h-14 w-24 rounded-2xl bg-white text-sm font-black text-slate-600 shadow-md"
+                className="py-3 w-20 rounded-xl bg-white text-sm font-black text-slate-600 shadow-md"
               >
                 กลับ
               </button>
@@ -775,7 +715,7 @@ export default function MemberSettingPage() {
                 type="submit"
                 disabled={!canSubmit || saving}
                 className={[
-                  "h-14 flex-1 rounded-2xl text-sm font-black shadow-lg transition active:scale-[0.98]",
+                  "h-14 flex-1 rounded-xl text-sm font-black shadow-lg transition active:scale-[0.98]",
                   canSubmit && !saving
                     ? "bg-cyan-500 text-white shadow-cyan-100"
                     : "cursor-not-allowed bg-slate-200 text-slate-400 shadow-none",
@@ -784,6 +724,21 @@ export default function MemberSettingPage() {
                 {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
               </button>
             </footer>
+
+            <section className="rounded-xl border border-red-300 bg-red-100 mt-4 px-5 py-3">
+              <p className="mt-2 text-xs leading-6 text-red-600">
+                เมื่อลบแล้วจะไม่แสดงในรายการและไม่สามารถเลือกใช้ในการจองได้
+              </p>
+
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="mt-2 py-3 w-full rounded-xl bg-red-500 text-sm font-black text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-red-200"
+              >
+                {deleting ? "กำลังลบ..." : "ลบสมาชิก"}
+              </button>
+            </section>
           </form>
         )}
       </section>

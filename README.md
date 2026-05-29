@@ -527,4 +527,4 @@ This project is currently developed as part of the CareMate application.
 
 ## Author
 
-CareMate Development Team
+Patarajarin Napakhan

@@ -4,14 +4,6 @@ export const bloodTypeOptions = [
   { label: "B", value: "B" },
   { label: "AB", value: "AB" },
   { label: "O", value: "O" },
-  { label: "A+", value: "A+" },
-  { label: "A-", value: "A-" },
-  { label: "B+", value: "B+" },
-  { label: "B-", value: "B-" },
-  { label: "AB+", value: "AB+" },
-  { label: "AB-", value: "AB-" },
-  { label: "O+", value: "O+" },
-  { label: "O-", value: "O-" },
 ];
 
 export const relationshipOptions = [
@@ -24,7 +16,6 @@ export const relationshipOptions = [
   { label: "บุตร", value: "child" },
   { label: "พี่น้อง", value: "sibling" },
   { label: "ญาติ", value: "relative" },
-  { label: "เพื่อน", value: "friend" },
   { label: "อื่น ๆ", value: "other" },
 ];
 

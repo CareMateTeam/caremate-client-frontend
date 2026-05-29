@@ -30,7 +30,7 @@ export function Field({
         placeholder={placeholder}
         inputMode={inputMode}
         maxLength={maxLength}
-        className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50"
+        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50"
       />
     </label>
   );

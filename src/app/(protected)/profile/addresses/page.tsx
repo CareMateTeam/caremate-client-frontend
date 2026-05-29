@@ -321,7 +321,7 @@ export default function AddressesPage() {
 
           <MapPicker position={position} onChange={updatePosition} />
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* <div className="grid grid-cols-2 gap-3">
             <FormInput
               label="Latitude"
               value={form.latitude}
@@ -337,7 +337,7 @@ export default function AddressesPage() {
               inputMode="decimal"
               onChange={(value) => updateForm("longitude", value)}
             />
-          </div>
+          </div> */}
 
           <div className="rounded-2xl bg-cyan-50 px-4 py-3 text-xs leading-5 text-cyan-800">
             แนะนำให้กด “ใช้ตำแหน่งปัจจุบัน” ก่อน แล้วค่อยขยับหมุดบนแผนที่
