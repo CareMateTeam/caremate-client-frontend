@@ -2,26 +2,27 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Clock3, UserRound, UsersRound } from "lucide-react";
 import { unwrapApiData } from "@/libs/user/map-user-profile";
 import { BackendCareService, CareServicesData } from "@/dto/service";
 import { bookingSteps, timeSlots } from "@/constants/booking";
 import { PaymentButton } from "@/components/button/payment-button";
-import {
-  SummaryRowDark,
-  SummaryRowLight,
-} from "@/components/format/summary-row";
-import { formatMoney } from "@/libs/general/currency-format";
 import LanguageSwitcher from "@/components/language-switcher";
 import Image from "next/image";
 import { useI18n } from "@/libs/i18n/i18n-provider";
-import { BookingMemberOption, RelativeListItem, TimeMode } from "@/dto/booking";
+import {
+  BookingCareTargetDetail,
+  BookingMemberOption,
+  RelativeListItem,
+  TimeMode,
+} from "@/dto/booking";
 import {
   buildAddressText,
   getFullName,
   getRelationshipLabel,
   getUserFromMeResponse,
   hasValidLatLong,
+  normalizeRelativeCareTargetDetail,
+  normalizeSelfCareTargetDetail,
   toNullableNumber,
 } from "@/libs/general/string-handler";
 import AddressRequiredPopup from "@/components/card/address-require-popup";
@@ -56,6 +57,8 @@ export default function BookingDetailPage() {
   const [note, setNote] = useState("");
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("promptpay");
+  const [selectedCareTargetDetail, setSelectedCareTargetDetail] =
+    useState<BookingCareTargetDetail | null>(null);
   const [addressPopup, setAddressPopup] = useState<{
     open: boolean;
     title: string;
@@ -413,13 +416,17 @@ export default function BookingDetailPage() {
         const data = unwrapApiData<Record<string, any>>(json);
         const user = getUserFromMeResponse(data);
 
-        const latitude = toNullableNumber(user?.latitude);
-        const longitude = toNullableNumber(user?.longitude);
+        const detail = normalizeSelfCareTargetDetail(user);
+
+        const latitude = detail.latitude;
+        const longitude = detail.longitude;
 
         if (!hasValidLatLong(latitude, longitude)) {
           openAddressRequiredPopup(target);
           return false;
         }
+
+        setSelectedCareTargetDetail(detail);
 
         setMemberOptions((prev) =>
           prev.map((item) =>
@@ -429,11 +436,11 @@ export default function BookingDetailPage() {
                   latitude,
                   longitude,
                   addressText: buildAddressText({
-                    addressLine: user?.addressLine,
-                    subdistrict: user?.subdistrict,
-                    district: user?.district,
-                    province: user?.province,
-                    postalCode: user?.postalCode,
+                    addressLine: detail.addressLine,
+                    subdistrict: detail.subdistrict,
+                    district: detail.district,
+                    province: detail.province,
+                    postalCode: detail.postalCode,
                   }),
                 }
               : item,
@@ -442,17 +449,16 @@ export default function BookingDetailPage() {
 
         setAddress(
           buildAddressText({
-            addressLine: user?.addressLine,
-            subdistrict: user?.subdistrict,
-            district: user?.district,
-            province: user?.province,
-            postalCode: user?.postalCode,
+            addressLine: detail.addressLine,
+            subdistrict: detail.subdistrict,
+            district: detail.district,
+            province: detail.province,
+            postalCode: detail.postalCode,
           }),
         );
 
         return true;
       }
-
       const res = await fetch(`/api/relative/${target.id}`, {
         method: "GET",
         cache: "no-store",
@@ -467,20 +473,24 @@ export default function BookingDetailPage() {
       const data = unwrapApiData<Record<string, any>>(json);
       const relative = data?.relative ?? data;
 
-      const latitude = toNullableNumber(relative?.latitude);
-      const longitude = toNullableNumber(relative?.longitude);
+      const detail = normalizeRelativeCareTargetDetail(relative);
+
+      const latitude = detail.latitude;
+      const longitude = detail.longitude;
 
       if (!hasValidLatLong(latitude, longitude)) {
         openAddressRequiredPopup(target);
         return false;
       }
 
+      setSelectedCareTargetDetail(detail);
+
       const addressText = buildAddressText({
-        addressLine: relative?.addressLine,
-        subdistrict: relative?.subdistrict,
-        district: relative?.district,
-        province: relative?.province,
-        postalCode: relative?.postalCode,
+        addressLine: detail.addressLine,
+        subdistrict: detail.subdistrict,
+        district: detail.district,
+        province: detail.province,
+        postalCode: detail.postalCode,
       });
 
       setMemberOptions((prev) =>
@@ -615,6 +625,7 @@ export default function BookingDetailPage() {
               date={date}
               selectedTimeLabel={selectedTimeLabel}
               selectedCareTarget={selectedCareTarget}
+              selectedCareTargetDetail={selectedCareTargetDetail}
               paymentMethod={paymentMethod}
               serviceFee={serviceFee}
               platformFee={platformFee}

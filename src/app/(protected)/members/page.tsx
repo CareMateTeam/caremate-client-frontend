@@ -9,6 +9,7 @@ import { MAX_MEMBERS } from "@/constants/member";
 import { GetRelativesData, RelativeMember } from "@/dto/register";
 import { unwrapApiData } from "@/libs/user/map-user-profile";
 import { calculateAge } from "@/libs/user/map-lib";
+import { getInitials } from "@/libs/general/string-handler";
 
 function getRelationshipLabel(value: string) {
   const map: Record<string, string> = {
@@ -23,11 +24,6 @@ function getRelationshipLabel(value: string) {
   };
 
   return map[value] ?? value;
-}
-
-function getInitials(member: RelativeMember) {
-  const name = member.firstName || member.firstName || "?";
-  return name.slice(0, 1);
 }
 
 function getGenderLabel(value?: string) {

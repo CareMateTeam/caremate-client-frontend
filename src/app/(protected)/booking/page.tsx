@@ -151,7 +151,7 @@ export default function BookingPage() {
         <LanguageSwitcher />
       </header>
 
-      <header className="rounded-[2rem] border border-white/80 bg-white/85 p-5 shadow-sm backdrop-blur">
+      <header className="rounded-xl border border-white/80 bg-white/85 p-5 shadow-sm backdrop-blur">
         <div className="mb-5 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-cyan-600">CareMate</p>

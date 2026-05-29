@@ -1,5 +1,6 @@
 "use client";
 
+import { getFirstName, getInitials } from "@/libs/general/string-handler";
 import { UserRound, UsersRound } from "lucide-react";
 
 export type BookingMemberOption = {
@@ -48,7 +49,7 @@ export default function BookingCareTargetStep({
       ) : (
         <div className="space-y-3">
           {memberError && (
-            <p className="rounded-2xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-700">
+            <p className="rounded-xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-700">
               {memberError}
             </p>
           )}
@@ -62,25 +63,24 @@ export default function BookingCareTargetStep({
                 type="button"
                 onClick={() => onSelectCareTarget(member.id)}
                 className={[
-                  "w-full rounded-3xl border p-4 text-left transition active:scale-[0.99]",
+                  "w-full rounded-xl border p-4 text-left transition active:scale-[0.99]",
                   active
-                    ? "border-cyan-400 bg-cyan-50 ring-4 ring-cyan-100"
+                    ? "border-green-500 border-2 bg-green-50 shadow-md shadow-green-200"
                     : "border-slate-200 bg-white",
                 ].join(" ")}
               >
                 <div className="flex items-center gap-4">
                   <div
-                    className={[
-                      "grid h-14 w-14 place-items-center rounded-2xl",
-                      member.type === "self"
-                        ? "bg-cyan-100 text-cyan-700"
-                        : "bg-emerald-100 text-emerald-700",
-                    ].join(" ")}
+                    className={["", member.type === "self" ? "" : ""].join(" ")}
                   >
                     {member.type === "self" ? (
-                      <UserRound className="h-7 w-7" />
+                      <div className="h-14 w-14 grid place-items-center rounded-full bg-cyan-500 text-white">
+                        Me
+                      </div>
                     ) : (
-                      <UsersRound className="h-7 w-7" />
+                       <div className=" h-14 w-14 grid place-items-center  rounded-full bg-gradient-to-br from-cyan-500 to-pink-200  font-black text-white">
+                            {getFirstName(member.name)}
+                          </div>
                     )}
                   </div>
 
@@ -91,7 +91,7 @@ export default function BookingCareTargetStep({
                       </p>
 
                       {active && (
-                        <span className="rounded-full bg-cyan-500 px-3 py-1 text-[10px] font-black text-white">
+                        <span className="rounded-full bg-green-500 px-3 py-1 text-[10px] font-black text-white">
                           เลือกแล้ว
                         </span>
                       )}
