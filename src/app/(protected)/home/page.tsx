@@ -3,6 +3,7 @@
 import { useI18n } from "@/libs/i18n/i18n-provider";
 import LanguageSwitcher from "@/components/language-switcher";
 import Image from "next/image";
+import Link from "next/link";
 import { UserInformation, UserProfileResponse } from "@/dto/user";
 import { TopUserInformation } from "@/components/card/user-information";
 import { useEffect, useState } from "react";
@@ -11,6 +12,84 @@ import {
   unwrapApiData,
 } from "@/libs/user/map-user-profile";
 import { TopUserInformationSkeleton } from "@/components/card/user-skelton";
+import HomeImageCarousel from "@/components/home/image-carousel";
+import HomeHeroSection from "@/components/home/home-hero-section";
+
+const quickActions = [
+  {
+    title: "จองบริการดูแล",
+    description: "เลือกบริการดูแลที่เหมาะกับคุณและครอบครัว",
+    href: "/services",
+    icon: "🩺",
+    color: "from-cyan-500 to-emerald-500",
+  },
+  {
+    title: "จัดการสมาชิก",
+    description: "เพิ่มข้อมูลผู้รับการดูแลและคนในครอบครัว",
+    href: "/members",
+    icon: "👨‍👩‍👧",
+    color: "from-emerald-500 to-teal-500",
+  },
+  {
+    title: "ตั้งค่าที่อยู่",
+    description: "กำหนดตำแหน่งสำหรับให้ผู้ดูแลเดินทางไปบริการ",
+    href: "/profile/addresses",
+    icon: "📍",
+    color: "from-sky-500 to-cyan-500",
+  },
+  {
+    title: "แจ้งเตือน",
+    description: "ติดตามข่าวสารและการแจ้งเตือนสำคัญ",
+    href: "/notifications",
+    icon: "🔔",
+    color: "from-violet-500 to-cyan-500",
+  },
+];
+
+const careHighlights = [
+  {
+    icon: "💚",
+    title: "ดูแลด้วยความเข้าใจ",
+    description:
+      "CareMate ช่วยให้การดูแลคนสำคัญเป็นเรื่องง่ายขึ้น ตั้งแต่ข้อมูลสุขภาพ ที่อยู่ ไปจนถึงการประสานงานกับผู้ดูแล",
+  },
+  {
+    icon: "🏠",
+    title: "บริการถึงบ้าน",
+    description:
+      "เหมาะสำหรับผู้สูงอายุ ผู้ป่วย หรือสมาชิกในครอบครัวที่ต้องการความช่วยเหลือในชีวิตประจำวัน",
+  },
+  {
+    icon: "📝",
+    title: "ข้อมูลครบในที่เดียว",
+    description:
+      "จัดเก็บข้อมูลผู้รับการดูแล เช่น โรคประจำตัว ยาที่ใช้ ภูมิแพ้ และผู้ติดต่อฉุกเฉิน เพื่อให้บริการได้ปลอดภัยมากขึ้น",
+  },
+];
+
+const healthTips = [
+  "เช็กข้อมูลสุขภาพของสมาชิกให้ครบก่อนทำการจองบริการ",
+  "ตั้งค่าที่อยู่และตำแหน่งแผนที่ให้ถูกต้อง เพื่อให้ผู้ดูแลเดินทางได้สะดวก",
+  "เพิ่มผู้ติดต่อฉุกเฉินไว้เสมอ เพื่อความปลอดภัยของผู้รับการดูแล",
+];
+
+const careSteps = [
+  {
+    step: "01",
+    title: "เพิ่มข้อมูลผู้รับการดูแล",
+    description: "กรอกข้อมูลส่วนตัว สุขภาพ ที่อยู่ และเบอร์ติดต่อฉุกเฉิน",
+  },
+  {
+    step: "02",
+    title: "เลือกบริการที่ต้องการ",
+    description: "เลือกประเภทบริการดูแลที่เหมาะกับสถานการณ์ของครอบครัว",
+  },
+  {
+    step: "03",
+    title: "ยืนยันวัน เวลา และสถานที่",
+    description: "ตรวจสอบรายละเอียดก่อนส่งคำขอรับบริการ",
+  },
+];
 
 export default function HomePage() {
   const { t } = useI18n();
@@ -49,55 +128,8 @@ export default function HomePage() {
     fetchMe();
   }, []);
 
-  const serviceCards = [
-    {
-      icon: "👩‍⚕️",
-      title: t.home.findCaregiver,
-      desc: t.home.findCaregiverDesc,
-      badge: t.home.findCaregiverBadge,
-    },
-    {
-      icon: "📅",
-      title: t.home.bookService,
-      desc: t.home.bookServiceDesc,
-      badge: t.home.bookServiceBadge,
-    },
-    {
-      icon: "💬",
-      title: t.home.chatSupport,
-      desc: t.home.chatSupportDesc,
-      badge: t.home.chatSupportBadge,
-    },
-    {
-      icon: "📝",
-      title: t.home.carePlan,
-      desc: t.home.carePlanDesc,
-      badge: t.home.carePlanBadge,
-    },
-  ];
-
-  const stats = [
-    {
-      label: t.home.statsCareHoursLabel,
-      value: "128",
-      unit: t.home.statsCareHoursUnit,
-    },
-    {
-      label: t.home.statsBookingsLabel,
-      value: "12",
-      unit: t.home.statsBookingsUnit,
-    },
-    {
-      label: t.home.statsCareScoreLabel,
-      value: "96",
-      unit: t.home.statsCareScoreUnit,
-    },
-  ];
-
-  const careSteps = t.home.careSteps;
-
   return (
-    <div className=" z-10  space-y-6">
+    <div className="z-10 space-y-6">
       <header className="flex items-center justify-between">
         <div>
           {/* <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
@@ -128,183 +160,198 @@ export default function HomePage() {
         <TopUserInformation user={currentUser} />
       ) : null}
 
-      <section className="overflow-hidden rounded-[2rem] bg-white p-5 shadow-xl shadow-emerald-100/60 backdrop-blur-xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              Today overview
+      <HomeHeroSection />
+      <HomeImageCarousel />
+      <section className="grid grid-cols-2 gap-3">
+        {quickActions.map((item) => (
+          <Link
+            key={item.title}
+            href={item.href}
+            className="group rounded-xl shadow-md  border border-gray-200 bg-white/90 p-4 transition active:scale-[0.98]"
+          >
+            <div
+              className={[
+                "grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br text-2xl text-white shadow-lg",
+                item.color,
+              ].join(" ")}
+            >
+              {item.icon}
             </div>
 
-            <h2 className="mt-4 text-2xl font-black tracking-tight text-slate-950">
-              ดูแลคนสำคัญ
-              <br />
-              ได้ง่ายขึ้นในที่เดียว
+            <h3 className="mt-4 text-sm font-black text-slate-950">
+              {item.title}
+            </h3>
+
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              {item.description}
+            </p>
+
+            <p className="mt-3 text-xs font-black text-cyan-600">กดเลย</p>
+          </Link>
+        ))}
+      </section>
+
+      <section className="rounded-[2rem] border border-emerald-100 bg-white px-5 py-6 shadow-xl shadow-emerald-100 ">
+        <div className="flex items-start gap-4">
+          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-3xl">
+            🌿
+          </div>
+
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-600">
+              About CareMate
+            </p>
+
+            <h2 className="mt-1 text-xl font-black text-slate-950">
+              บ้านที่ดูแลกันได้ดีขึ้น เริ่มจากข้อมูลที่พร้อม
             </h2>
 
-            <p className="mt-2 max-w-xs text-sm leading-6 text-slate-600">
-              {t.home.description}
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              CareMate ถูกออกแบบมาเพื่อช่วยให้ครอบครัวจัดการการดูแลได้ง่ายขึ้น
+              โดยเชื่อมข้อมูลผู้รับการดูแล ที่อยู่ สุขภาพ และบริการไว้ในที่เดียว
+              เพื่อให้การดูแลมีความต่อเนื่องและปลอดภัย
             </p>
-          </div>
-
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-emerald-100 to-sky-100 text-2xl shadow-inner">
-            💚
-          </div>
-        </div>
-
-        <div className="mt-5 rounded-[1.5rem] bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-4 text-white shadow-lg shadow-emerald-100">
-          <p className="text-xs font-medium text-white/90">
-            Today care summary
-          </p>
-
-          <div className="mt-3 grid grid-cols-3 gap-3">
-            {stats.map((item) => (
-              <div
-                key={item.label}
-                className="rounded-2xl bg-white/20 p-3 backdrop-blur"
-              >
-                <p className="text-xl font-black leading-none">
-                  {item.value}
-                  <span className="ml-1 text-[10px] font-semibold">
-                    {item.unit}
-                  </span>
-                </p>
-                <p className="mt-1 text-[10px] text-white/80">{item.label}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
-      <section>
+      <section className="mt-4">
         <div className="mb-3 flex items-end justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">
-              Services
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-600">
+              Care Features
             </p>
             <h2 className="text-lg font-black text-slate-950">
-              เลือกบริการที่ต้องการ
+              CareMate ช่วยอะไรได้บ้าง
             </h2>
           </div>
-
-          <button
-            type="button"
-            className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm ring-1 ring-emerald-100 backdrop-blur"
-          >
-            View all
-          </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {serviceCards.map((item) => (
-            <button
+        <div className="space-y-3">
+          {careHighlights.map((item) => (
+            <div
               key={item.title}
-              type="button"
-              className="group rounded-[1.6rem] bg-white/90 p-4 text-left shadow-lg shadow-emerald-50 backdrop-blur transition hover:-translate-y-1 hover:shadow-xl"
+              className="rounded-[1.5rem] border border-slate-100 bg-white p-4 shadow-lg shadow-slate-50"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-emerald-50 to-sky-50 text-2xl shadow-inner">
+              <div className="flex gap-4">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-50 text-2xl">
                   {item.icon}
                 </div>
 
-                <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-600">
-                  {item.badge}
-                </span>
+                <div>
+                  <h3 className="text-sm font-black text-slate-950">
+                    {item.title}
+                  </h3>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    {item.description}
+                  </p>
+                </div>
               </div>
-
-              <h3 className="mt-4 text-sm font-black text-slate-950">
-                {item.title}
-              </h3>
-
-              <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
-                {item.desc}
-              </p>
-
-              <div className="mt-4 flex items-center gap-1 text-xs font-bold text-emerald-600">
-                {t.home.actionLabel}
-                <span className="transition group-hover:translate-x-1"></span>
-              </div>
-            </button>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-white/80 bg-white/85 p-5 shadow-xl shadow-emerald-50 backdrop-blur-xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">
-              Next appointment
-            </p>
-            <h2 className="mt-1 font-black text-slate-950">
-              {t.home.upcomingBooking}
-            </h2>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
-              {t.home.upcomingTime}
-            </p>
-          </div>
-
-          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-            {t.home.confirmed}
-          </span>
-        </div>
-
-        <div className="mt-5 flex items-center gap-4 rounded-[1.5rem] bg-gradient-to-br from-slate-50 to-emerald-50/70 p-4">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-2xl shadow-sm">
-            👩‍⚕️
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="font-bold text-slate-950">{t.home.nurseAssistant}</p>
-            <p className="mt-1 text-xs text-slate-500">
-              {t.home.nurseLocation}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className="rounded-2xl bg-slate-950 px-3 py-2 text-xs font-bold text-white shadow-lg shadow-slate-200"
-          >
-            Detail
-          </button>
-        </div>
-      </section>
-
-      {/* Care journey */}
-      <section className="rounded-[2rem] border border-white/80 bg-white/75 p-5 shadow-xl shadow-sky-50 backdrop-blur-xl">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600">
-            {t.home.careJourneyTitle}
+      <section className="overflow-hidden rounded-[2rem] border border-cyan-100 bg-white shadow-xl shadow-cyan-50">
+        <div className="bg-gradient-to-r from-cyan-50 to-emerald-50 p-5">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-600">
+            How it works
           </p>
-          <h2 className="mt-1 text-lg font-black text-slate-950">
-            {t.home.careJourneyHeadline}
+          <h2 className="mt-1 text-xl font-black text-slate-950">
+            เริ่มใช้งานง่ายใน 3 ขั้นตอน
           </h2>
         </div>
 
-        <div className="mt-5 space-y-4">
-          {careSteps.map((step, index) => (
-            <div key={step.title} className="flex gap-3">
+        <div className="space-y-4 p-5">
+          {careSteps.map((item, index) => (
+            <div key={item.step} className="flex gap-4">
               <div className="flex flex-col items-center">
-                <div className="grid px-3 py-1 h-fit w-fit place-items-center rounded-full bg-emerald-500 text-xs font-black text-white shadow-lg shadow-emerald-100">
-                  {index + 1}
+                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-950 text-sm font-black text-white">
+                  {item.step}
                 </div>
 
-                {index !== careSteps.length - 1 && (
-                  <div className="mt-2 h-full w-px bg-emerald-100" />
+                {index < careSteps.length - 1 && (
+                  <div className="mt-2 h-10 w-px bg-slate-200" />
                 )}
               </div>
 
               <div className="pb-2">
-                <h3 className="text-sm font-bold text-slate-950">
-                  {step.title}
+                <h3 className="text-sm font-black text-slate-950">
+                  {item.title}
                 </h3>
                 <p className="mt-1 text-xs leading-5 text-slate-500">
-                  {step.desc}
+                  {item.description}
                 </p>
               </div>
             </div>
           ))}
         </div>
       </section>
+
+      <section className="rounded-[2rem] border border-amber-100 bg-amber-50 p-5 shadow-xl shadow-amber-50">
+        <div className="flex items-start gap-4">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-2xl shadow-sm">
+            💡
+          </div>
+
+          <div>
+            <h2 className="text-lg font-black text-slate-950">
+              เคล็ดลับก่อนเริ่มจองบริการ
+            </h2>
+
+            <div className="mt-4 space-y-3">
+              {healthTips.map((tip) => (
+                <div key={tip} className="flex gap-3">
+                  <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+                  <p className="text-sm leading-6 text-slate-600">{tip}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-[2rem] bg-slate-950 p-5 text-white shadow-2xl shadow-slate-200">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
+              Ready to care
+            </p>
+
+            <h2 className="mt-2 text-2xl font-black leading-tight">
+              เตรียมข้อมูลให้พร้อม
+              <br />
+              แล้วเริ่มดูแลได้ทันที
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-white/70">
+              เพิ่มสมาชิก ตั้งค่าที่อยู่ และเลือกบริการที่เหมาะกับครอบครัวของคุณ
+            </p>
+          </div>
+
+          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/10 text-3xl">
+            🤝
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <Link
+            href="/members"
+            className="rounded-2xl bg-white px-4 py-3 text-center text-sm font-black text-slate-950 active:scale-[0.98]"
+          >
+            จัดการสมาชิก
+          </Link>
+
+          <Link
+            href="/services"
+            className="rounded-2xl bg-cyan-500 px-4 py-3 text-center text-sm font-black text-white active:scale-[0.98]"
+          >
+            ดูบริการ
+          </Link>
+        </div>
+      </section>
+
+      <div className="h-6" />
     </div>
   );
 }

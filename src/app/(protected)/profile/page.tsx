@@ -75,22 +75,6 @@ export default function ProfilePage() {
         <TopUserInformation user={userCardInfo} />
       ) : null}
 
-      {/* <section className="grid grid-cols-3 gap-3">
-        {profileStats.map((item) => (
-          <div
-            key={item.label}
-            className="rounded-3xl border border-white/80 bg-white/85 p-4 text-center shadow-sm"
-          >
-            <p className="text-xl font-extrabold text-slate-950">
-              {item.value}
-            </p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
-              {item.label}
-            </p>
-          </div>
-        ))}
-      </section> */}
-
       <section className="rounded-lg border border-white/80 bg-white/85 p-5 shadow-sm">
         <h2 className="text-lg font-bold text-slate-950">ข้อมูลบัญชี</h2>
 

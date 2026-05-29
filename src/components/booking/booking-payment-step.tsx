@@ -8,6 +8,9 @@ import {
 } from "@/components/format/summary-row";
 import type { BookingMemberOption } from "./booking-care-target-step";
 import { BookingCareTargetDetail } from "@/dto/booking";
+import { formatDuration } from "@/libs/general/date";
+import { InfoRow } from "../format/info-rows";
+import { valueOrDash } from "@/libs/general/string-handler";
 
 type BookingPaymentStepProps = {
   selectedService: BackendCareService | null;
@@ -19,16 +22,15 @@ type BookingPaymentStepProps = {
   serviceFee: number;
   platformFee: number;
   totalPrice: number;
+
+  baseFeePerHour: number;
+  bookingDurationMinutes: number;
+  billableMinutes: number;
+  billableHours: number;
+
   onPaymentMethodChange: (value: string) => void;
 };
 
-function valueOrDash(value?: string | number | null) {
-  if (value === null || value === undefined || value === "") {
-    return "-";
-  }
-
-  return String(value);
-}
 
 function buildFullName(detail: BookingCareTargetDetail | null) {
   if (!detail) return "-";
@@ -116,22 +118,6 @@ function formatDate(value?: string | null) {
   });
 }
 
-function InfoRow({
-  label,
-  value,
-}: {
-  label: string;
-  value?: string | number | null;
-}) {
-  return (
-    <div className="rounded-xl bg-slate-100 px-4 py-2">
-      <p className="text-[11px] font-bold text-slate-400">{label}</p>
-      <p className="mt-1 break-words text-sm font-black text-slate-800">
-        {valueOrDash(value)}
-      </p>
-    </div>
-  );
-}
 
 function SectionTitle({
   icon,
@@ -170,6 +156,10 @@ export default function BookingPaymentStep({
   serviceFee,
   platformFee,
   totalPrice,
+  baseFeePerHour,
+  bookingDurationMinutes,
+  billableMinutes,
+  billableHours,
   onPaymentMethodChange,
 }: BookingPaymentStepProps) {
   const detailName = buildFullName(selectedCareTargetDetail);
@@ -424,6 +414,21 @@ export default function BookingPaymentStep({
       <section className="rounded-xl border border-slate-100 bg-white p-5 shadow-md">
         <div className="space-y-3">
           <SummaryRowLight
+            label="ราคา/ชั่วโมง"
+            value={`${formatMoney(baseFeePerHour)} ฿`}
+          />
+
+          <SummaryRowLight
+            label="ระยะเวลาจริง"
+            value={formatDuration(bookingDurationMinutes)}
+          />
+
+          {/* <SummaryRowLight
+            label="เวลาที่คิดเงิน"
+            value={`${formatDuration(billableMinutes)}`}
+          /> */}
+
+          <SummaryRowLight
             label="ค่าบริการ"
             value={`${formatMoney(serviceFee)} ฿`}
           />
@@ -433,7 +438,7 @@ export default function BookingPaymentStep({
             value={`${formatMoney(platformFee)} ฿`}
           />
 
-          <div className="border-t  border-dashed border-slate-400 pt-3">
+          <div className="border-t border-dashed border-slate-400 pt-3">
             <SummaryRowLight
               label="ยอดรวม"
               value={`${formatMoney(totalPrice)} ฿`}

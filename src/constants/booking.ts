@@ -49,3 +49,5 @@ export const bookingSteps = [
     icon: CreditCard,
   },
 ];
+
+export const BILLING_STEP_MINUTES = 30;

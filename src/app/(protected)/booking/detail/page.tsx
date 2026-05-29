@@ -33,6 +33,12 @@ import BookingAddressStep from "@/components/booking/booking-address-step";
 import BookingPaymentStep from "@/components/booking/booking-payment-step";
 import BookingServiceSummary from "@/components/booking/booking-service-summary";
 import BookingStepIndicator from "@/components/booking/booking-step-indicator";
+import {
+  extractTimeRangeFromSlot,
+  getDurationMinutes,
+  minutesToHours,
+  roundUpToBillingStep,
+} from "@/libs/general/date";
 
 export default function BookingDetailPage() {
   const router = useRouter();
@@ -244,11 +250,7 @@ export default function BookingDetailPage() {
   }, [memberOptions, selectedCareTargetId]);
 
   const isRangeTimeValid = useMemo(() => {
-    if (!rangeStartTime || !rangeEndTime) {
-      return false;
-    }
-
-    return rangeStartTime < rangeEndTime;
+    return getDurationMinutes(rangeStartTime, rangeEndTime) > 0;
   }, [rangeStartTime, rangeEndTime]);
 
   const selectedTimeLabel = useMemo(() => {
@@ -263,18 +265,71 @@ export default function BookingDetailPage() {
     return "-";
   }, [timeMode, selectedTime, rangeStartTime, rangeEndTime, isRangeTimeValid]);
 
-  const canGoNext = useMemo(() => {
+
+
+  const bookingDurationMinutes = useMemo(() => {
+    if (timeMode === "range") {
+      return getDurationMinutes(rangeStartTime, rangeEndTime);
+    }
+
+    if (timeMode === "fixed") {
+      const range = extractTimeRangeFromSlot(selectedTime);
+
+      if (!range) {
+        return 0;
+      }
+
+      return getDurationMinutes(range.startTime, range.endTime);
+    }
+
+    return 0;
+  }, [timeMode, rangeStartTime, rangeEndTime, selectedTime]);
+
+  const billableMinutes = useMemo(() => {
+    return roundUpToBillingStep(bookingDurationMinutes);
+  }, [bookingDurationMinutes]);
+
+  const billableHours = useMemo(() => {
+    return minutesToHours(billableMinutes);
+  }, [billableMinutes]);
+
+  const baseFeePerHour = selectedService?.base_fee ?? 0;
+
+  const serviceFee = useMemo(() => {
+    return baseFeePerHour * billableHours;
+  }, [baseFeePerHour, billableHours]);
+
+  const platformFee = 20;
+
+  const totalPrice = useMemo(() => {
+    return serviceFee + platformFee;
+  }, [serviceFee, platformFee]);
+
+  const handleSelectTimeMode = (nextMode: TimeMode) => {
+    setTimeMode(nextMode);
+
+    if (nextMode === "fixed") {
+      setRangeStartTime("09:00");
+      setRangeEndTime("12:00");
+      return;
+    }
+
+    if (nextMode === "range") {
+      setSelectedTime("");
+    }
+  };
+ const canGoNext = useMemo(() => {
     if (currentStep === 1) {
       if (!date || !timeMode) {
         return false;
       }
 
       if (timeMode === "fixed") {
-        return Boolean(selectedTime);
+        return Boolean(selectedTime) && bookingDurationMinutes > 0;
       }
 
       if (timeMode === "range") {
-        return isRangeTimeValid;
+        return isRangeTimeValid && billableMinutes > 0;
       }
 
       return false;
@@ -307,25 +362,6 @@ export default function BookingDetailPage() {
     address,
     paymentMethod,
   ]);
-
-  const serviceFee = selectedService?.base_fee ?? 0;
-  const platformFee = 20;
-  const totalPrice = serviceFee + platformFee;
-
-  const handleSelectTimeMode = (nextMode: TimeMode) => {
-    setTimeMode(nextMode);
-
-    if (nextMode === "fixed") {
-      setRangeStartTime("09:00");
-      setRangeEndTime("12:00");
-      return;
-    }
-
-    if (nextMode === "range") {
-      setSelectedTime("");
-    }
-  };
-
   const handleNext = async () => {
     if (!canGoNext) return;
 
@@ -341,7 +377,6 @@ export default function BookingDetailPage() {
       setCurrentStep((prev) => prev + 1);
       return;
     }
-
     const payload = {
       serviceId: selectedService?.id,
       serviceSlug,
@@ -354,6 +389,20 @@ export default function BookingDetailPage() {
               startTime: rangeStartTime,
               endTime: rangeEndTime,
             },
+
+      duration: {
+        actualMinutes: bookingDurationMinutes,
+        billableMinutes,
+        billableHours,
+      },
+
+      price: {
+        baseFeePerHour,
+        serviceFee,
+        platformFee,
+        totalPrice,
+      },
+
       careTarget: {
         id: selectedCareTarget?.id,
         type: selectedCareTarget?.type,
@@ -365,7 +414,6 @@ export default function BookingDetailPage() {
       note,
       address,
       paymentMethod,
-      totalPrice,
     };
 
     console.log("Mock booking payload:", payload);
@@ -630,6 +678,10 @@ export default function BookingDetailPage() {
               serviceFee={serviceFee}
               platformFee={platformFee}
               totalPrice={totalPrice}
+              baseFeePerHour={baseFeePerHour}
+              bookingDurationMinutes={bookingDurationMinutes}
+              billableMinutes={billableMinutes}
+              billableHours={billableHours}
               onPaymentMethodChange={setPaymentMethod}
             />
           )}

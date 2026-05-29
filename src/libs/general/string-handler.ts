@@ -182,3 +182,12 @@ export function normalizeRelativeCareTargetDetail(relative: Record<string, any>)
     relationship: relative?.relationship ?? null,
   } satisfies BookingCareTargetDetail;
 }
+
+
+export function valueOrDash(value?: string | number | null) {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+
+  return String(value);
+}
