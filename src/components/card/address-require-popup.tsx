@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/libs/i18n/i18n-provider";
+
 type AddressRequiredPopupProps = {
   open: boolean;
   title: string;
@@ -18,6 +20,8 @@ export default function AddressRequiredPopup({
   onConfirm,
   onClose,
 }: AddressRequiredPopupProps) {
+  const { t } = useI18n();
+
   if (!open) {
     return null;
   }
@@ -47,7 +51,7 @@ export default function AddressRequiredPopup({
             onClick={() => onConfirm(href)}
             className="h-12 rounded-2xl bg-cyan-500 text-sm font-black text-white shadow-lg shadow-cyan-100 active:scale-[0.98]"
           >
-            ไปตั้งค่าที่อยู่
+            {t.popups.addressRequiredConfirm}
           </button>
 
           <button
@@ -55,7 +59,7 @@ export default function AddressRequiredPopup({
             onClick={onClose}
             className="h-12 rounded-2xl bg-slate-100 text-sm font-black text-slate-600 active:scale-[0.98]"
           >
-            ยกเลิก
+            {t.popups.addressRequiredCancel}
           </button>
         </div>
       </div>

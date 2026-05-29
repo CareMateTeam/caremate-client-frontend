@@ -10,27 +10,29 @@ import { GetRelativesData, RelativeMember } from "@/dto/register";
 import { unwrapApiData } from "@/libs/user/map-user-profile";
 import { calculateAge } from "@/libs/user/map-lib";
 import { getInitials } from "@/libs/general/string-handler";
+import type { Dictionary } from "@/libs/i18n/dictionaries/en";
 
-function getRelationshipLabel(value: string) {
+function getRelationshipLabel(value: string, t: Dictionary) {
   const map: Record<string, string> = {
-    father: "พ่อ",
-    mother: "แม่",
-    grandfather: "ปู่ / ตา",
-    grandmother: "ย่า / ยาย",
-    sibling: "พี่น้อง",
-    child: "ลูก",
-    spouse: "คู่สมรส",
-    other: "อื่น ๆ",
+    father: t.relationship.father,
+    mother: t.relationship.mother,
+    grandfather: t.relationship.grandfather,
+    grandmother: t.relationship.grandmother,
+    sibling: t.relationship.sibling,
+    child: t.relationship.child,
+    spouse: t.relationship.spouse,
+    relative: t.relationship.relative,
+    other: t.relationship.other,
   };
 
   return map[value] ?? value;
 }
 
-function getGenderLabel(value?: string) {
+function getGenderLabel(value: string | undefined, t: Dictionary) {
   const map: Record<string, string> = {
-    male: "ชาย",
-    female: "หญิง",
-    other: "อื่น ๆ",
+    male: t.gender.male,
+    female: t.gender.female,
+    other: t.gender.other,
   };
 
   if (!value) return "-";
@@ -72,7 +74,7 @@ export default function MembersPage() {
         const json = await res.json().catch(() => null);
 
         if (!res.ok) {
-          throw new Error(json?.message ?? "ไม่สามารถโหลดข้อมูลสมาชิกได้");
+          throw new Error(json?.message ?? t.members.fetchError);
         }
 
         const data = unwrapApiData<GetRelativesData>(json);
@@ -85,7 +87,7 @@ export default function MembersPage() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "ไม่สามารถโหลดข้อมูลสมาชิกได้",
+            : t.members.fetchError,
         );
       } finally {
         setLoading(false);
@@ -132,11 +134,10 @@ export default function MembersPage() {
         <section className="overflow-hidden rounded-xl border border-white bg-white/90 p-5 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-lg font-bold text-cyan-600">สมาชิกที่ดูแล</p>
+              <p className="text-lg font-bold text-cyan-600">{t.members.title}</p>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                เพิ่มข้อมูลญาติหรือผู้ที่ต้องการรับบริการดูแล
-                สามารถเพิ่มได้สูงสุด {MAX_MEMBERS} คน
+                {t.members.description.replace("{max}", String(MAX_MEMBERS))}
               </p>
             </div>
 
@@ -147,16 +148,16 @@ export default function MembersPage() {
 
           <div className="mt-5 grid grid-cols-2 gap-3">
             <div className="rounded-xl grid place-items-center bg-cyan-50 p-4">
-              <p className="text-xs font-bold text-cyan-600">จำนวนสมาชิก</p>
+              <p className="text-xs font-bold text-cyan-600">{t.members.countLabel}</p>
               <p className="mt-1 text-2xl font-black text-cyan-800">
                 {activeMembers.length}/{MAX_MEMBERS}
               </p>
             </div>
 
             <div className="rounded-xl grid place-items-center bg-emerald-50 p-4">
-              <p className="text-xs font-bold text-emerald-600">ค่าเริ่มต้น</p>
+              <p className="text-xs font-bold text-emerald-600">{t.members.defaultLabel}</p>
               <p className="mt-1 truncate text-lg font-black text-emerald-800">
-                {defaultMember ? getFirstName(defaultMember) : "ยังไม่มี"}
+                {defaultMember ? getFirstName(defaultMember) : t.members.noDefault}
               </p>
             </div>
           </div>
@@ -164,9 +165,9 @@ export default function MembersPage() {
 
         <section className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-black text-slate-950">รายชื่อสมาชิก</h3>
+            <h3 className="text-lg font-black text-slate-950">{t.members.listTitle}</h3>
             <p className="mt-1 text-xs text-slate-500">
-              เลือกสมาชิกนี้ไปใช้ตอนสร้าง booking ได้ในขั้นถัดไป
+              {t.members.listHint}
             </p>
           </div>
 
@@ -177,7 +178,7 @@ export default function MembersPage() {
                 className="rounded-xl bg-gradient-to-br border border-gray-400 from-emerald-500 to-blue-500 px-4 py-3 
                 text-sm font-black text-white shadow-md shadow-gray-400 transition active:scale-[0.98]"
               >
-                เพิ่ม
+                {t.members.addButton}
               </Link>
             ) : (
               <button
@@ -185,7 +186,7 @@ export default function MembersPage() {
                 disabled
                 className="cursor-not-allowed rounded-2xl bg-slate-200 px-4 py-3 text-sm font-black text-slate-400"
               >
-                เต็มแล้ว
+                {t.members.fullButton}
               </button>
             ))}
         </section>
@@ -212,18 +213,18 @@ export default function MembersPage() {
             </div>
 
             <h3 className="mt-4 text-lg font-black text-slate-950">
-              ยังไม่มีสมาชิก
+              {t.members.emptyTitle}
             </h3>
 
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              เริ่มเพิ่มข้อมูลญาติหรือคนที่ต้องการดูแล เพื่อใช้ในการจองบริการ
+              {t.members.emptyDescription}
             </p>
 
             <Link
               href="/members/create"
               className="mt-5 inline-flex h-12 items-center justify-center rounded-2xl bg-cyan-500 px-5 text-sm font-black text-white shadow-lg shadow-cyan-100"
             >
-              เพิ่มสมาชิกคนแรก
+              {t.members.emptyAction}
             </Link>
           </section>
         ) : (
@@ -233,6 +234,7 @@ export default function MembersPage() {
               const displayName = getDisplayName(member);
               const relationshipLabel = getRelationshipLabel(
                 member.relationship,
+                t,
               );
 
               return (
@@ -269,7 +271,7 @@ export default function MembersPage() {
 
                                 {member.isDefault && (
                                   <span className="shrink-0 rounded-full bg-emerald-100 px-4 py-1 text-xs font-black text-emerald-700 shadow-md animate-pulse">
-                                    สมาชิกหลัก
+                                    {t.members.primaryBadge}
                                   </span>
                                 )}
                               </div>
@@ -280,7 +282,7 @@ export default function MembersPage() {
                                 </span>
 
                                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
-                                  ลำดับ #{member.seq}
+                                  {t.members.seqLabel} #{member.seq}
                                 </span>
                               </div>
                             </div>
@@ -297,7 +299,7 @@ export default function MembersPage() {
 
                             <div className="min-w-0">
                               <p className="text-[10px] font-bold text-slate-400">
-                                อายุ
+                                {t.members.ageLabel}
                               </p>
                               <p className="mt-0.5 truncate text-xs font-black text-slate-800">
                                 {calculateAge(member.dateOfBirth)} 
@@ -314,10 +316,10 @@ export default function MembersPage() {
 
                             <div className="min-w-0">
                               <p className="text-[10px] font-bold text-slate-400">
-                                เพศ
+                                {t.members.genderLabel}
                               </p>
                               <p className="mt-0.5 truncate text-xs font-black text-slate-800">
-                                {getGenderLabel(member.gender)}
+                                {getGenderLabel(member.gender, t)}
                               </p>
                             </div>
                           </div>
@@ -333,7 +335,7 @@ export default function MembersPage() {
 
                             <div className="min-w-0">
                               <p className="text-[10px] font-black text-amber-600">
-                                หมายเหตุการดูแล
+                                {t.members.careNoteLabel}
                               </p>
                               <p className="mt-1 line-clamp-2 text-xs leading-5 text-amber-700">
                                 {note}
@@ -352,7 +354,7 @@ export default function MembersPage() {
 
         {!canAddMore && (
           <p className="rounded-2xl bg-slate-100 px-4 py-3 text-center text-xs font-semibold text-slate-500">
-            คุณเพิ่มสมาชิกครบ {MAX_MEMBERS} คนแล้ว
+            {t.members.fullText.replace("{max}", String(MAX_MEMBERS))}
           </p>
         )}
       </section>

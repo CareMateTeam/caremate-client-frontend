@@ -6,6 +6,8 @@ import {
   UsersRound,
 } from "lucide-react";
 
+import type { Dictionary } from "@/libs/i18n/dictionaries/en";
+
 export const timeSlots = [
   "08:00 - 10:00",
   "10:00 - 12:00",
@@ -15,39 +17,53 @@ export const timeSlots = [
   "20:00 - 22:00",
 ];
 
-export const stepsForBooking = [
-  { id: 1, title: "เลือกเวลา" },
-  { id: 2, title: "หมายเหตุ" },
-  { id: 3, title: "สถานที่" },
-  { id: 4, title: "ชำระเงิน" },
-];
+export type BookingStepKey =
+  | "dateTime"
+  | "careReceiver"
+  | "detail"
+  | "address"
+  | "payment";
 
-export const bookingSteps = [
-  {
-    id: 1,
-    title: "วันเวลา",
-    icon: CalendarDays,
-  },
-  {
-    id: 2,
-    title: "ผู้รับดูแล",
-    icon: UsersRound,
-  },
-  {
-    id: 3,
-    title: "รายละเอียด",
-    icon: StickyNote,
-  },
-  {
-    id: 4,
-    title: "ที่อยู่",
-    icon: MapPin,
-  },
-  {
-    id: 5,
-    title: "ชำระเงิน",
-    icon: CreditCard,
-  },
-];
+export interface BookingStep {
+  id: number;
+  key: BookingStepKey;
+  title: string;
+  icon: typeof CalendarDays;
+}
+
+export function getBookingSteps(t: Dictionary): BookingStep[] {
+  return [
+    {
+      id: 1,
+      key: "dateTime",
+      title: t.bookingSteps.dateTime,
+      icon: CalendarDays,
+    },
+    {
+      id: 2,
+      key: "careReceiver",
+      title: t.bookingSteps.careReceiver,
+      icon: UsersRound,
+    },
+    {
+      id: 3,
+      key: "detail",
+      title: t.bookingSteps.detail,
+      icon: StickyNote,
+    },
+    {
+      id: 4,
+      key: "address",
+      title: t.bookingSteps.address,
+      icon: MapPin,
+    },
+    {
+      id: 5,
+      key: "payment",
+      title: t.bookingSteps.payment,
+      icon: CreditCard,
+    },
+  ];
+}
 
 export const BILLING_STEP_MINUTES = 30;

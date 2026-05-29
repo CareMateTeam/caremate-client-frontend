@@ -13,9 +13,9 @@ export default function IntroBackground({ children }: IntroBackgroundProps) {
       <div className="pointer-events-none absolute top-20 right-[-60px] h-80 w-80 rounded-full bg-sky-200/40 blur-3xl" />
       <div className="pointer-events-none absolute bottom-[-80px] left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-rose-100/40 blur-3xl" />
 
-      <div className="pointer-events-none absolute inset-0 opacity-[0.18]">
+      {/* <div className="pointer-events-none absolute inset-0 opacity-[0.18]">
         <div className="h-full w-full bg-[linear-gradient(to_right,#0f766e_1px,transparent_1px),linear-gradient(to_bottom,#0f766e_1px,transparent_1px)] bg-[size:42px_42px]" />
-      </div>
+      </div> */}
 
       <div className="relative z-10">{children}</div>
     </main>

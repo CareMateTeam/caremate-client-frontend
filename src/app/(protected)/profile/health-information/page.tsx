@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  bloodTypeOptions,
-  relationshipOptions,
+  getBloodTypeOptions,
+  getRelationshipOptions,
 } from "@/constants/health-information";
+import { useI18n } from "@/libs/i18n/i18n-provider";
 import { unwrapApiData } from "@/libs/user/map-user-profile";
 import SaveSuccessPopUp from "@/components/card/save-success-pop-up";
 import { FormInput } from "@/components/input/form-input";
@@ -25,6 +26,10 @@ const initialForm: HealthInformationForm = {
 
 export default function HealthInformationPage() {
   const router = useRouter();
+  const { t } = useI18n();
+
+  const bloodTypeOptions = useMemo(() => getBloodTypeOptions(t), [t]);
+  const relationshipOptions = useMemo(() => getRelationshipOptions(t), [t]);
 
   const [form, setForm] = useState<HealthInformationForm>(initialForm);
   const [loading, setLoading] = useState(true);
@@ -47,7 +52,7 @@ export default function HealthInformationPage() {
 
         if (!res.ok) {
           throw new Error(
-            json?.message ?? "Failed to fetch health information",
+            json?.message ?? t.health.fetchError,
           );
         }
 
@@ -66,14 +71,14 @@ export default function HealthInformationPage() {
         });
       } catch (error) {
         console.error("Fetch health information error:", error);
-        setMessage("โหลดข้อมูลสุขภาพไม่สำเร็จ");
+        setMessage(t.health.fetchError);
       } finally {
         setLoading(false);
       }
     };
 
     fetchHealthInformation();
-  }, []);
+  }, [t]);
 
   const updateForm = <K extends keyof HealthInformationForm>(
     key: K,
@@ -92,7 +97,7 @@ export default function HealthInformationPage() {
       form.emergencyContactPhone.trim() &&
       form.emergencyContactPhone.trim().length > 20
     ) {
-      setMessage("เบอร์โทรผู้ติดต่อฉุกเฉินต้องไม่เกิน 20 ตัวอักษร");
+      setMessage(t.health.validationPhoneMax);
       return;
     }
 
@@ -124,14 +129,14 @@ export default function HealthInformationPage() {
       const json = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(json?.message ?? "Failed to update health information");
+        throw new Error(json?.message ?? t.health.saveError);
       }
 
       setShowSuccessPopup(true);
 
     } catch (error) {
       console.error("Update health information error:", error);
-      setMessage("บันทึกข้อมูลสุขภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+      setMessage(t.health.saveError);
     } finally {
       setSaving(false);
     }
@@ -151,13 +156,12 @@ export default function HealthInformationPage() {
       <section className="rounded-[2rem] border border-white/80 bg-white/85 p-5 shadow-sm backdrop-blur">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-cyan-600">Profile</p>
+            <p className="text-sm font-semibold text-cyan-600">{t.health.badge}</p>
             <h1 className="mt-1 text-2xl font-extrabold text-slate-950">
-              ข้อมูลสุขภาพ
+              {t.health.title}
             </h1>
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              บันทึกข้อมูลสุขภาพที่สำคัญ เพื่อช่วยให้ผู้ดูแลเข้าใจข้อควรระวัง
-              โรคประจำตัว ยาที่ใช้อยู่ และข้อมูลติดต่อฉุกเฉิน
+              {t.health.description}
             </p>
           </div>
 
@@ -174,24 +178,24 @@ export default function HealthInformationPage() {
         <section className="space-y-4">
           <div>
             <h2 className="text-lg font-bold text-slate-950">
-              ผู้ติดต่อฉุกเฉิน
+              {t.health.emergencyTitle}
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-500">
-              ใช้สำหรับติดต่อในกรณีฉุกเฉินระหว่างการดูแล
+              {t.health.emergencyDescription}
             </p>
           </div>
 
           <FormInput
-            label="ชื่อผู้ติดต่อฉุกเฉิน"
+            label={t.health.emergencyNameLabel}
             value={form.emergencyContactName}
-            placeholder="เช่น คุณแม่, คุณพ่อ, ญาติ"
+            placeholder={t.health.emergencyNamePlaceholder}
             onChange={(value) => updateForm("emergencyContactName", value)}
           />
 
           <FormInput
-            label="เบอร์โทรผู้ติดต่อฉุกเฉิน"
+            label={t.health.emergencyPhoneLabel}
             value={form.emergencyContactPhone}
-            placeholder="เช่น 0812345678"
+            placeholder={t.health.emergencyPhonePlaceholder}
             inputMode="tel"
             maxLength={20}
             onChange={(value) => updateForm("emergencyContactPhone", value)}
@@ -199,7 +203,7 @@ export default function HealthInformationPage() {
 
           <label className="block">
             <span className="mb-2 block text-sm font-semibold text-slate-700">
-              ความสัมพันธ์
+              {t.health.relationshipLabel}
             </span>
 
             <select
@@ -223,16 +227,16 @@ export default function HealthInformationPage() {
         <section className="space-y-4">
           <div>
             <h2 className="text-lg font-bold text-slate-950">
-              ข้อมูลสุขภาพพื้นฐาน
+              {t.health.basicTitle}
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-500">
-              ข้อมูลนี้ช่วยให้ผู้ดูแลระมัดระวังและวางแผนการดูแลได้ดีขึ้น
+              {t.health.basicDescription}
             </p>
           </div>
 
           <label className="block">
             <span className="mb-2 block text-sm font-semibold text-slate-700">
-              กรุ๊ปเลือด
+              {t.health.bloodTypeLabel}
             </span>
 
             <select
@@ -249,38 +253,37 @@ export default function HealthInformationPage() {
           </label>
 
           <FormTextarea
-            label="ประวัติการแพ้"
+            label={t.health.allergiesLabel}
             value={form.allergies}
-            placeholder="เช่น แพ้อาหารทะเล, แพ้ยาเพนิซิลลิน, ไม่มี"
+            placeholder={t.health.allergiesPlaceholder}
             onChange={(value) => updateForm("allergies", value)}
           />
 
           <FormTextarea
-            label="โรคประจำตัว"
+            label={t.health.diseasesLabel}
             value={form.congenitalDiseases}
-            placeholder="เช่น เบาหวาน, ความดัน, หอบหืด, ไม่มี"
+            placeholder={t.health.diseasesPlaceholder}
             onChange={(value) => updateForm("congenitalDiseases", value)}
           />
 
           <FormTextarea
-            label="ยาที่ใช้อยู่ปัจจุบัน"
+            label={t.health.medicationsLabel}
             value={form.currentMedications}
-            placeholder="เช่น ยาความดันหลังอาหารเช้า, อินซูลิน, ไม่มี"
+            placeholder={t.health.medicationsPlaceholder}
             onChange={(value) => updateForm("currentMedications", value)}
           />
 
           <FormTextarea
-            label="หมายเหตุสำหรับผู้ดูแล"
+            label={t.health.careNoteLabel}
             value={form.careNote}
-            placeholder="เช่น เดินไม่สะดวก, ต้องช่วยเตือนกินยา, ต้องเลี่ยงอาหารบางชนิด"
+            placeholder={t.health.careNotePlaceholder}
             rows={4}
             onChange={(value) => updateForm("careNote", value)}
           />
         </section>
 
         <div className="rounded-2xl bg-cyan-50 px-4 py-3 text-xs leading-5 text-cyan-800">
-          ข้อมูลสุขภาพควรถูกกรอกให้ตรงกับความจริง
-          เพื่อช่วยให้การดูแลปลอดภัยและเหมาะสมมากขึ้น
+          {t.health.disclaimer}
         </div>
 
         {message ? (
@@ -295,7 +298,7 @@ export default function HealthInformationPage() {
             onClick={() => router.back()}
             className="h-12 flex-1 rounded-2xl border border-slate-200 bg-white text-sm font-bold text-slate-600 transition hover:bg-slate-50 active:scale-[0.99]"
           >
-            ย้อนกลับ
+            {t.health.backButton}
           </button>
 
           <button
@@ -303,15 +306,15 @@ export default function HealthInformationPage() {
             disabled={saving}
             className="h-12 flex-1 rounded-2xl bg-cyan-500 text-sm font-bold text-white shadow-md shadow-cyan-100 transition hover:bg-cyan-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
+            {saving ? t.health.savingButton : t.health.saveButton}
           </button>
         </div>
       </form>
 
       {showSuccessPopup ? (
         <SaveSuccessPopUp
-          label="ข้อมูลสุขภาพ"
-          backto="หน้าโปรไฟล์"
+          label={t.health.saveSuccessLabel}
+          backto={t.health.saveSuccessBackto}
           backtoHref="/profile"
         />
       ) : null}

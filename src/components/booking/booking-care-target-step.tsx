@@ -1,6 +1,7 @@
 "use client";
 
 import { getFirstName, getInitials } from "@/libs/general/string-handler";
+import { useI18n } from "@/libs/i18n/i18n-provider";
 import { UserRound, UsersRound } from "lucide-react";
 
 export type BookingMemberOption = {
@@ -30,14 +31,16 @@ export default function BookingCareTargetStep({
   selectedCareTargetId,
   onSelectCareTarget,
 }: BookingCareTargetStepProps) {
+  const { t } = useI18n();
+  const ct = t.booking.careTarget;
   return (
     <div className="space-y-5">
       <div>
         <h2 className="text-xl font-black text-slate-950">
-          ต้องการให้ดูแลใคร?
+          {ct.title}
         </h2>
         <p className="mt-1 text-sm text-slate-500">
-          เลือกได้ว่าจะให้ดูแลตัวคุณเอง หรือสมาชิกที่เพิ่มไว้ใน Relative
+          {ct.description}
         </p>
       </div>
 
@@ -75,7 +78,7 @@ export default function BookingCareTargetStep({
                   >
                     {member.type === "self" ? (
                       <div className="h-14 w-14 grid place-items-center rounded-full bg-cyan-500 text-white">
-                        Me
+                        {ct.meAvatar}
                       </div>
                     ) : (
                        <div className=" h-14 w-14 grid place-items-center  rounded-full bg-gradient-to-br from-cyan-500 to-pink-200  font-black text-white">
@@ -92,7 +95,7 @@ export default function BookingCareTargetStep({
 
                       {active && (
                         <span className="rounded-full bg-green-500 px-3 py-1 text-[10px] font-black text-white">
-                          เลือกแล้ว
+                          {ct.selectedBadge}
                         </span>
                       )}
                     </div>
@@ -103,7 +106,7 @@ export default function BookingCareTargetStep({
 
                     {member.phone && (
                       <p className="mt-1 text-xs font-semibold text-slate-400">
-                        โทร {member.phone}
+                        {ct.phonePrefix}{member.phone}
                       </p>
                     )}
                   </div>

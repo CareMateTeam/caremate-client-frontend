@@ -17,9 +17,9 @@ import SaveSuccessPopUp from "@/components/card/save-success-pop-up";
 import { SelectField } from "@/components/input/select-field";
 import { FormTextarea } from "@/components/input/form-text-area";
 import {
-  bloodTypeOptions,
-  genderOptions,
-  relationshipOptions,
+  getBloodTypeOptions,
+  getGenderOptions,
+  getRelationshipOptions,
 } from "@/constants/health-information";
 import dynamic from "next/dynamic";
 import { MapPosition } from "../../profile/addresses/map-picker";
@@ -29,7 +29,7 @@ const MapPicker = dynamic(() => import("../../profile/addresses/map-picker"), {
   ssr: false,
   loading: () => (
     <div className="grid h-72 place-items-center rounded-2xl bg-slate-100 text-sm font-semibold text-slate-500">
-      กำลังโหลดแผนที่...
+      Loading map...
     </div>
   ),
 });
@@ -68,6 +68,10 @@ export default function MemberSettingPage() {
 
   const relativeId = params.relativeId;
 
+  const bloodTypeOptions = useMemo(() => getBloodTypeOptions(t), [t]);
+  const genderOptions = useMemo(() => getGenderOptions(t), [t]);
+  const relationshipOptions = useMemo(() => getRelationshipOptions(t), [t]);
+
   const [form, setForm] = useState<MemberSettingForm>(initialForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -103,14 +107,14 @@ export default function MemberSettingPage() {
         const json = await res.json().catch(() => null);
 
         if (!res.ok) {
-          throw new Error(json?.message ?? "ไม่สามารถโหลดข้อมูลสมาชิกได้");
+          throw new Error(json?.message ?? t.members.fetchError);
         }
 
         const data = unwrapApiData<GetRelativeByIDData>(json);
         const member = data.relative;
 
         if (!member) {
-          throw new Error("ไม่พบข้อมูลสมาชิก");
+          throw new Error(t.members.fetchError);
         }
 
         setForm({
@@ -150,7 +154,7 @@ export default function MemberSettingPage() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "ไม่สามารถโหลดข้อมูลสมาชิกได้",
+            : t.members.fetchError,
         );
       } finally {
         setLoading(false);
@@ -158,7 +162,7 @@ export default function MemberSettingPage() {
     };
 
     fetchMember();
-  }, [relativeId]);
+  }, [relativeId, t]);
 
   const updatePosition = (nextPosition: MapPosition) => {
     setForm((prev) => ({
@@ -171,7 +175,7 @@ export default function MemberSettingPage() {
     setMessage("");
 
     if (!navigator.geolocation) {
-      setMessage("เบราว์เซอร์นี้ไม่รองรับการดึงตำแหน่งปัจจุบัน");
+      setMessage(t.addresses.geoUnsupported);
       return;
     }
 
@@ -184,22 +188,20 @@ export default function MemberSettingPage() {
           lng: position.coords.longitude,
         });
 
-        setMessage(
-          "ดึงตำแหน่งปัจจุบันเรียบร้อยแล้ว สามารถขยับหมุดเพื่อปรับตำแหน่งได้",
-        );
+        setMessage(t.addresses.geoSuccess);
         setLocating(false);
       },
       (error) => {
         console.error("Geolocation error:", error);
 
         if (error.code === error.PERMISSION_DENIED) {
-          setMessage("ไม่สามารถเข้าถึงตำแหน่งได้ เพราะผู้ใช้ไม่อนุญาต");
+          setMessage(t.addresses.geoDenied);
         } else if (error.code === error.POSITION_UNAVAILABLE) {
-          setMessage("ไม่สามารถระบุตำแหน่งปัจจุบันได้");
+          setMessage(t.addresses.geoUnavailable);
         } else if (error.code === error.TIMEOUT) {
-          setMessage("การดึงตำแหน่งใช้เวลานานเกินไป กรุณาลองใหม่");
+          setMessage(t.addresses.geoTimeout);
         } else {
-          setMessage("ดึงตำแหน่งไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+          setMessage(t.addresses.geoFailed);
         }
 
         setLocating(false);
@@ -225,7 +227,7 @@ export default function MemberSettingPage() {
     event.preventDefault();
 
     if (!canSubmit) {
-      setErrorMessage("กรุณากรอกชื่อ นามสกุล เบอร์โทร และความสัมพันธ์ให้ครบ");
+      setErrorMessage(t.validation.firstNameRequired);
       return;
     }
 
@@ -236,12 +238,12 @@ export default function MemberSettingPage() {
       const longitude = Number(form.longitude);
 
       if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
-        setMessage("Latitude ต้องเป็นตัวเลขระหว่าง -90 ถึง 90");
+        setMessage(t.addresses.latRange);
         return;
       }
 
       if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-        setMessage("Longitude ต้องเป็นตัวเลขระหว่าง -180 ถึง 180");
+        setMessage(t.addresses.lngRange);
         return;
       }
       const payload = {
@@ -285,7 +287,7 @@ export default function MemberSettingPage() {
       const json = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(json?.message ?? "ไม่สามารถบันทึกข้อมูลสมาชิกได้");
+        throw new Error(json?.message ?? t.members.create.saveError);
       }
 
       setShowSuccessPopup(true);
@@ -295,7 +297,7 @@ export default function MemberSettingPage() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "ไม่สามารถบันทึกข้อมูลสมาชิกได้",
+          : t.members.create.saveError,
       );
     } finally {
       setSaving(false);
@@ -320,7 +322,7 @@ export default function MemberSettingPage() {
       const json = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(json?.message ?? "ไม่สามารถลบสมาชิกได้");
+        throw new Error(json?.message ?? t.members.create.saveError);
       }
 
       router.replace("/members");
@@ -329,7 +331,7 @@ export default function MemberSettingPage() {
       console.error("Delete member error:", error);
 
       setErrorMessage(
-        error instanceof Error ? error.message : "ไม่สามารถลบสมาชิกได้",
+        error instanceof Error ? error.message : t.members.create.saveError,
       );
     } finally {
       setDeleting(false);
@@ -361,11 +363,10 @@ export default function MemberSettingPage() {
         </header>
 
         <section className="rounded-xl bg-gradient-to-br from-cyan-500 to-sky-300 p-5 text-white shadow-md shadow-sky-300">
-          <p className="text-sm font-bold text-white/80">Member Setting</p>
-          <h2 className="mt-1 text-2xl font-black">ตั้งค่าสมาชิก</h2>
+          <p className="text-sm font-bold text-white/80">{t.members.create.badge}</p>
+          <h2 className="mt-1 text-2xl font-black">{t.members.title}</h2>
           <p className="mt-2 text-sm leading-6 text-white/90">
-            แก้ไขข้อมูลส่วนตัว ที่อยู่ ข้อมูลติดต่อ
-            และประวัติการดูแลทั้งหมดในหน้านี้
+            {t.members.create.description}
           </p>
         </section>
 
@@ -384,48 +385,48 @@ export default function MemberSettingPage() {
           <form onSubmit={handleSave} className="space-y-4">
             <section className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
               <h3 className="text-lg font-black text-slate-950">
-                ข้อมูลส่วนตัว
+                {t.booking.payment.personalTitle}
               </h3>
 
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <Field
-                  label="ชื่อจริง"
+                  label={t.members.create.firstNameLabel}
                   value={form.firstName}
                   onChange={(value) => updateForm("firstName", value)}
-                  placeholder="ชื่อจริง"
+                  placeholder={t.members.create.firstNamePlaceholder}
                 />
 
                 <Field
-                  label="นามสกุล"
+                  label={t.members.create.lastNameLabel}
                   value={form.lastName}
                   onChange={(value) => updateForm("lastName", value)}
-                  placeholder="นามสกุล"
+                  placeholder={t.members.create.lastNamePlaceholder}
                 />
               </div>
 
               <div className="mt-4">
                 <Field
-                  label="เบอร์โทรศัพท์"
+                  label={t.members.create.phoneLabel}
                   value={form.phone}
                   onChange={(value) => updateForm("phone", value)}
-                  placeholder="08x-xxx-xxxx"
+                  placeholder={t.members.create.phonePlaceholder}
                   type="tel"
                 />
               </div>
 
               <div className="mt-4">
                 <Field
-                  label="อีเมล"
+                  label={t.members.create.emailLabel}
                   value={form.email}
                   onChange={(value) => updateForm("email", value)}
-                  placeholder="example@email.com"
+                  placeholder={t.members.create.emailPlaceholder}
                   type="email"
                 />
               </div>
               <div className="block">
                 <div className="mb-2 mt-3 flex items-center justify-between gap-3">
                   <span className="block text-sm font-semibold text-slate-700">
-                    วันเกิด
+                    {t.members.create.dobLabel}
                   </span>
 
                   {form.dateOfBirth ? (
@@ -434,7 +435,7 @@ export default function MemberSettingPage() {
                       onClick={() => setEditingBirthDate((prev) => !prev)}
                       className="text-xs font-bold text-cyan-600 hover:text-cyan-700"
                     >
-                      {editingBirthDate ? "ยกเลิก" : "แก้ไข"}
+                      {editingBirthDate ? t.common.cancel : t.common.edit}
                     </button>
                   ) : null}
                 </div>
@@ -455,7 +456,7 @@ export default function MemberSettingPage() {
                     </span>
 
                     <span className="text-xs text-slate-400">
-                      กดแก้ไขเพื่อเปลี่ยน
+                      {t.common.edit}
                     </span>
                   </div>
                 )}
@@ -463,7 +464,7 @@ export default function MemberSettingPage() {
 
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <SelectField
-                  label="เพศ"
+                  label={t.members.create.genderLabel}
                   value={form.gender}
                   onChange={(value) => updateForm("gender", value)}
                   options={genderOptions}
@@ -472,7 +473,7 @@ export default function MemberSettingPage() {
 
               <div className="mt-4 grid gap-3">
                 <SelectField
-                  label="ความสัมพันธ์"
+                  label={t.members.create.relationshipLabel}
                   value={form.relationship}
                   onChange={(value) => updateForm("relationship", value)}
                   options={relationshipOptions}
@@ -491,10 +492,10 @@ export default function MemberSettingPage() {
               >
                 <div>
                   <p className="font-black text-slate-950">
-                    ตั้งเป็นสมาชิกหลัก
+                    {t.members.create.setDefaultTitle}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    ใช้เป็นค่าเริ่มต้นตอนสร้าง booking
+                    {t.members.create.setDefaultDesc}
                   </p>
                 </div>
 
@@ -515,10 +516,10 @@ export default function MemberSettingPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-bold text-slate-950">
-                    ตำแหน่งบนแผนที่
+                    {t.addresses.mapTitle}
                   </h2>
                   <p className="mt-1 text-xs leading-5 text-slate-500">
-                    แตะบนแผนที่หรือขยับหมุดเพื่อเลือกพิกัด
+                    {t.addresses.mapDescription}
                   </p>
                 </div>
 
@@ -528,7 +529,7 @@ export default function MemberSettingPage() {
                   disabled={locating}
                   className="shrink-0 rounded-2xl bg-cyan-50 px-3 py-2 shadow-md text-xs font-bold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {locating ? "กำลังระบุ..." : "ใช้ตำแหน่งปัจจุบัน"}
+                  {locating ? t.addresses.locating : t.addresses.useCurrentLocation}
                 </button>
               </div>
 
@@ -553,33 +554,32 @@ export default function MemberSettingPage() {
               </div> */}
 
               <div className="rounded-2xl bg-cyan-50 px-4 py-3 text-xs leading-5 text-cyan-800">
-                แนะนำให้กด “ใช้ตำแหน่งปัจจุบัน” ก่อน แล้วค่อยขยับหมุดบนแผนที่
-                เพื่อให้ตำแหน่งแม่นยำขึ้น
+                {t.addresses.tip}
               </div>
             </section>
 
             <section className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
-              <h3 className="text-lg font-black text-slate-950">ที่อยู่</h3>
+              <h3 className="text-lg font-black text-slate-950">{t.addresses.detailsTitle}</h3>
 
               <div className="mt-4">
                 <FormTextarea
-                  label="ที่อยู่"
+                  label={t.addresses.addressLabel}
                   value={form.addressLine}
                   onChange={(value) => updateForm("addressLine", value)}
-                  placeholder="บ้านเลขที่, หมู่บ้าน, คอนโด, ชั้น, ห้อง"
+                  placeholder={t.members.create.addressPlaceholder}
                   rows={4}
                 />
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <Field
-                  label="ตำบล/แขวง"
+                  label={t.addresses.subdistrictLabel}
                   value={form.subdistrict}
                   onChange={(value) => updateForm("subdistrict", value)}
                 />
 
                 <Field
-                  label="อำเภอ/เขต"
+                  label={t.addresses.districtLabel}
                   value={form.district}
                   onChange={(value) => updateForm("district", value)}
                 />
@@ -587,13 +587,13 @@ export default function MemberSettingPage() {
 
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <Field
-                  label="จังหวัด"
+                  label={t.addresses.provinceLabel}
                   value={form.province}
                   onChange={(value) => updateForm("province", value)}
                 />
 
                 <Field
-                  label="รหัสไปรษณีย์"
+                  label={t.addresses.postalCodeLabel}
                   value={form.postalCode}
                   onChange={(value) => updateForm("postalCode", value)}
                   inputMode="numeric"
@@ -604,12 +604,12 @@ export default function MemberSettingPage() {
 
             <section className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
               <h3 className="text-lg font-black text-slate-950">
-                ผู้ติดต่อฉุกเฉิน
+                {t.health.emergencyTitle}
               </h3>
 
               <div className="mt-4">
                 <Field
-                  label="ชื่อผู้ติดต่อฉุกเฉิน"
+                  label={t.health.emergencyNameLabel}
                   value={form.emergencyContactName}
                   onChange={(value) =>
                     updateForm("emergencyContactName", value)
@@ -619,7 +619,7 @@ export default function MemberSettingPage() {
 
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <Field
-                  label="เบอร์ฉุกเฉิน"
+                  label={t.health.emergencyPhoneLabel}
                   value={form.emergencyContactPhone}
                   onChange={(value) =>
                     updateForm("emergencyContactPhone", value)
@@ -628,7 +628,7 @@ export default function MemberSettingPage() {
                 />
 
                 <Field
-                  label="ความสัมพันธ์"
+                  label={t.health.relationshipLabel}
                   value={form.emergencyContactRelationship}
                   onChange={(value) =>
                     updateForm("emergencyContactRelationship", value)
@@ -639,12 +639,12 @@ export default function MemberSettingPage() {
 
             <section className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
               <h3 className="text-lg font-black text-slate-950">
-                ประวัติการรักษา / ข้อมูลดูแล
+                {t.booking.payment.healthTitle}
               </h3>
 
               <div className="mt-4">
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
-                  กรุ๊ปเลือด
+                  {t.health.bloodTypeLabel}
                 </span>
 
                 <select
@@ -664,40 +664,40 @@ export default function MemberSettingPage() {
 
               <div className="mt-4">
                 <FormTextarea
-                  label="ประวัติแพ้ยา / แพ้อาหาร"
+                  label={t.health.allergiesLabel}
                   value={form.allergies}
                   onChange={(value) => updateForm("allergies", value)}
-                  placeholder="ระบุสิ่งที่แพ้"
+                  placeholder={t.health.allergiesPlaceholder}
                   rows={3}
                 />
               </div>
 
               <div className="mt-4">
                 <FormTextarea
-                  label="โรคประจำตัว"
+                  label={t.health.diseasesLabel}
                   value={form.congenitalDiseases}
                   onChange={(value) => updateForm("congenitalDiseases", value)}
-                  placeholder="เช่น เบาหวาน, ความดัน, หัวใจ"
+                  placeholder={t.health.diseasesPlaceholder}
                   rows={3}
                 />
               </div>
 
               <div className="mt-4">
                 <FormTextarea
-                  label="ยาที่ใช้อยู่ปัจจุบัน"
+                  label={t.health.medicationsLabel}
                   value={form.currentMedications}
                   onChange={(value) => updateForm("currentMedications", value)}
-                  placeholder="ระบุชื่อยาและวิธีใช้"
+                  placeholder={t.health.medicationsPlaceholder}
                   rows={3}
                 />
               </div>
 
               <div className="mt-4">
                 <FormTextarea
-                  label="หมายเหตุการดูแล"
+                  label={t.health.careNoteLabel}
                   value={form.careNote}
                   onChange={(value) => updateForm("careNote", value)}
-                  placeholder="สิ่งที่ผู้ดูแลควรรู้"
+                  placeholder={t.health.careNotePlaceholder}
                   rows={4}
                 />
               </div>
@@ -708,7 +708,7 @@ export default function MemberSettingPage() {
                 onClick={() => router.back()}
                 className="py-3 w-20 rounded-xl bg-white text-sm font-black text-slate-600 shadow-md"
               >
-                กลับ
+                {t.common.back}
               </button>
 
               <button
@@ -721,7 +721,7 @@ export default function MemberSettingPage() {
                     : "cursor-not-allowed bg-slate-200 text-slate-400 shadow-none",
                 ].join(" ")}
               >
-                {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
+                {saving ? t.common.saving : t.health.saveButton}
               </button>
             </footer>
 
@@ -736,7 +736,7 @@ export default function MemberSettingPage() {
                 disabled={deleting}
                 className="mt-2 py-3 w-full rounded-xl bg-red-500 text-sm font-black text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-red-200"
               >
-                {deleting ? "กำลังลบ..." : "ลบสมาชิก"}
+                {deleting ? t.common.saving : t.common.delete}
               </button>
             </section>
           </form>
@@ -744,8 +744,8 @@ export default function MemberSettingPage() {
       </section>
       {showSuccessPopup ? (
         <SaveSuccessPopUp
-          label="ข้อมูลสมาชิก"
-          backto="หน้าสมาชิก"
+          label={t.members.create.saveSuccessLabel}
+          backto={t.members.create.saveSuccessBackto}
           backtoHref="/members"
         />
       ) : null}

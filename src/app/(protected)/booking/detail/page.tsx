@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { unwrapApiData } from "@/libs/user/map-user-profile";
 import { BackendCareService, CareServicesData } from "@/dto/service";
-import { bookingSteps, timeSlots } from "@/constants/booking";
+import { getBookingSteps, timeSlots } from "@/constants/booking";
 import { PaymentButton } from "@/components/button/payment-button";
 import LanguageSwitcher from "@/components/language-switcher";
 import Image from "next/image";
@@ -47,6 +47,7 @@ export default function BookingDetailPage() {
   const serviceId = searchParams.get("serviceId") ?? "";
   const serviceSlug = searchParams.get("service") ?? "";
   const today = new Date().toISOString().slice(0, 10);
+  const bookingSteps = useMemo(() => getBookingSteps(t), [t]);
   const [currentStep, setCurrentStep] = useState(1);
   const [services, setServices] = useState<BackendCareService[]>([]);
   const [loadingService, setLoadingService] = useState(true);
@@ -99,7 +100,7 @@ export default function BookingDetailPage() {
         setServices(serviceData.services ?? []);
       } catch (error) {
         console.error("Fetch service detail error:", error);
-        setServiceError("ไม่สามารถโหลดข้อมูลบริการได้");
+        setServiceError(t.booking.fetchServiceError);
       } finally {
         setLoadingService(false);
       }
@@ -122,7 +123,7 @@ export default function BookingDetailPage() {
         const selfJson = await selfRes.json().catch(() => null);
 
         if (!selfRes.ok) {
-          throw new Error(selfJson?.message ?? "ไม่สามารถโหลดข้อมูลผู้ใช้ได้");
+          throw new Error(selfJson?.message ?? t.booking.fetchUserError);
         }
 
         const selfData = unwrapApiData<Record<string, any>>(selfJson);
@@ -131,7 +132,7 @@ export default function BookingDetailPage() {
         const selfName =
           user?.displayName ||
           getFullName(user?.firstName, user?.lastName, user?.fullName) ||
-          "ตัวฉันเอง";
+          t.booking.selfFallbackName;
         const selfLatitude = toNullableNumber(user?.latitude);
         const selfLongitude = toNullableNumber(user?.longitude);
 
@@ -140,7 +141,7 @@ export default function BookingDetailPage() {
             id: "self",
             type: "self",
             name: selfName,
-            subtitle: "ดูแลตัวเราเอง",
+            subtitle: t.booking.selfSubtitle,
             phone: user?.phone,
             relationship: "self",
             latitude: selfLatitude,
@@ -183,7 +184,7 @@ export default function BookingDetailPage() {
                 relative.firstName,
                 relative.lastName,
                 relative.fullName,
-              ) || "สมาชิก";
+              ) || t.booking.memberFallback;
 
             options.push({
               id,
@@ -215,15 +216,15 @@ export default function BookingDetailPage() {
         setMemberError(
           error instanceof Error
             ? error.message
-            : "ไม่สามารถโหลดรายชื่อสมาชิกได้",
+            : t.booking.fetchMembersError,
         );
 
         setMemberOptions([
           {
             id: "self",
             type: "self",
-            name: "ตัวฉันเอง",
-            subtitle: "ดูแลตัวเราเอง",
+            name: t.booking.selfFallbackName,
+            subtitle: t.booking.selfSubtitle,
             relationship: "self",
           },
         ]);
@@ -417,15 +418,14 @@ export default function BookingDetailPage() {
     };
 
     console.log("Mock booking payload:", payload);
-    alert("จองสำเร็จแบบจำลอง");
+    alert(t.booking.mockSuccess);
   };
   const openAddressRequiredPopup = (target: BookingMemberOption) => {
     if (target.type === "self") {
       setAddressPopup({
         open: true,
-        title: "คุณยังไม่ตั้งค่าที่อยู่ปัจจุบัน",
-        description:
-          "ระบบยังไม่พบตำแหน่งของคุณ กรุณาไปตั้งค่าที่อยู่ในหน้าโปรไฟล์ก่อนทำการจอง",
+        title: t.booking.addressRequired.selfTitle,
+        description: t.booking.addressRequired.selfDescription,
         href: "/profile/addresses",
       });
       return;
@@ -433,10 +433,9 @@ export default function BookingDetailPage() {
 
     setAddressPopup({
       open: true,
-      title: `สมาชิกยังไม่ตั้งค่าที่อยู่ปัจจุบัน`,
+      title: t.booking.addressRequired.memberTitle,
       target: `${target.name}`,
-      description:
-        "ระบบยังไม่พบตำแหน่งของสมาชิกคนนี้ กรุณาไปตั้งค่าที่อยู่ของสมาชิกก่อนทำการจอง",
+      description: t.booking.addressRequired.memberDescription,
       href: `/members/${target.id}`,
     });
   };
@@ -458,7 +457,7 @@ export default function BookingDetailPage() {
         const json = await res.json().catch(() => null);
 
         if (!res.ok) {
-          throw new Error(json?.message ?? "ไม่สามารถตรวจสอบที่อยู่ของคุณได้");
+          throw new Error(json?.message ?? t.booking.verifyAddressError);
         }
 
         const data = unwrapApiData<Record<string, any>>(json);
@@ -515,7 +514,7 @@ export default function BookingDetailPage() {
       const json = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(json?.message ?? "ไม่สามารถตรวจสอบที่อยู่สมาชิกได้");
+        throw new Error(json?.message ?? t.booking.verifyAddressError);
       }
 
       const data = unwrapApiData<Record<string, any>>(json);
@@ -562,11 +561,11 @@ export default function BookingDetailPage() {
 
       setAddressPopup({
         open: true,
-        title: "ไม่สามารถตรวจสอบที่อยู่ได้",
+        title: t.booking.addressRequired.verifyErrorTitle,
         description:
           error instanceof Error
             ? error.message
-            : "เกิดข้อผิดพลาดระหว่างตรวจสอบที่อยู่ กรุณาลองใหม่อีกครั้ง",
+            : t.booking.verifyGenericError,
         href:
           target.type === "self"
             ? "/profile/addresses"
@@ -695,7 +694,7 @@ export default function BookingDetailPage() {
                 onClick={handleBack}
                 className="h-12 rounded-xl border border-slate-200 shadow-sm bg-white px-5 text-sm font-black text-slate-700 active:scale-[0.98]"
               >
-                กลับ
+                {t.booking.backButton}
               </button>
             )}
 
@@ -705,7 +704,7 @@ export default function BookingDetailPage() {
               onClick={handleNext}
               className="w-full"
             >
-              {currentStep === bookingSteps.length ? "ยืนยันการจอง" : "ถัดไป"}
+              {currentStep === bookingSteps.length ? t.booking.confirmAndPay : t.booking.nextButton}
             </PaymentButton>
           </div>
         </section>

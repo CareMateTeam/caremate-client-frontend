@@ -92,17 +92,17 @@ export default function RegisterPage() {
       }
 
       if (!form.firstName.trim()) {
-        setErrorMessage("กรุณากรอกชื่อจริง");
+        setErrorMessage(t.validation.firstNameRequired);
         return;
       }
 
       if (!form.lastName.trim()) {
-        setErrorMessage("กรุณากรอกนามสกุล");
+        setErrorMessage(t.validation.lastNameRequired);
         return;
       }
 
       if (!form.phone.trim()) {
-        setErrorMessage("กรุณากรอกเบอร์โทรศัพท์");
+        setErrorMessage(t.validation.phoneRequired);
         return;
       }
 
@@ -333,7 +333,7 @@ export default function RegisterPage() {
               disabled={!accepted || submitting}
               className="w-full rounded-2xl bg-emerald-500 px-5 py-4 font-bold text-white shadow-lg shadow-emerald-100 transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
             >
-              {submitting ? "Submitting..." : t.register.submit}
+              {submitting ? t.register.submitting : t.register.submit}
             </button>
           </form>
         </div>

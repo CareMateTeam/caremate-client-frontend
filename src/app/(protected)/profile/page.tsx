@@ -12,6 +12,7 @@ import {
 } from "@/libs/user/map-user-profile";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useI18n } from "@/libs/i18n/i18n-provider";
 
 // const profileStats = [
 //   {
@@ -29,6 +30,7 @@ import { useEffect, useState } from "react";
 // ];
 
 export default function ProfilePage() {
+  const { t } = useI18n();
   const [currentUser, setCurrentUser] = useState<UserProfileResponse | null>(
     null,
   );
@@ -51,7 +53,7 @@ export default function ProfilePage() {
         const data = await res.json().catch(() => null);
 
         if (!res.ok) {
-          throw new Error(data?.message ?? "Failed to fetch user profile");
+          throw new Error(data?.message ?? t.profile.fetchError);
         }
 
         const profile = unwrapApiData<UserProfileResponse>(data);
@@ -76,33 +78,35 @@ export default function ProfilePage() {
       ) : null}
 
       <section className="rounded-lg border border-white/80 bg-white/85 p-5 shadow-sm">
-        <h2 className="text-lg font-bold text-slate-950">ข้อมูลบัญชี</h2>
+        <h2 className="text-lg font-bold text-slate-950">{t.profile.accountInfoTitle}</h2>
 
         <div className="mt-4 space-y-3">
           <InfoRow
-            label="อีเมล"
+            label={t.profile.emailLabel}
             value={currentUser?.information?.email ?? ""}
           />
-          <InfoRow label="เบอร์โทร" value={currentUser?.phone ?? ""} />
+          <InfoRow label={t.profile.phoneLabel} value={currentUser?.phone ?? ""} />
           <InfoRow
-            label="กรุ๊ปเลือด"
-            value={currentUser?.information?.bloodType ?? "ยังไม่ระบุ"}
+            label={t.profile.bloodTypeLabel}
+            value={currentUser?.information?.bloodType ?? t.profile.notSpecified}
           />
         </div>
       </section>
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-950">เมนูของฉัน</h2>
+          <h2 className="text-lg font-bold text-slate-950">{t.profile.myMenuTitle}</h2>
           <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold text-cyan-700">
-            เลือกเพื่อแก้ไขข้อมูลส่วนตัว
+            {t.profile.menuHint}
           </span>
         </div>
 
         <div className="space-y-3">
-          {menuItems.map((item) => (
+          {menuItems.map((item) => {
+            const m = t.profile.menu[item.key];
+            return (
             <Link
-              key={item.title}
+              key={item.key}
               href={item.href}
               className="block w-full rounded-lg border border-white/80 bg-white/85 p-4 text-left shadow-sm transition hover:border-cyan-200 hover:bg-white active:scale-[0.99]"
             >
@@ -112,19 +116,20 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-bold text-slate-950">{item.title}</h3>
+                  <h3 className="font-bold text-slate-950">{m.title}</h3>
                   <p className="mt-1 text-sm leading-5 text-slate-500">
-                    {item.description}
+                    {m.description}
                   </p>
                 </div>
 
                 <span className="text-xl text-slate-500">›</span>
               </div>
             </Link>
-          ))}
+          );})}
         </div>
       </section>
       <PdpaPolicyPopup />
+      <div className="py-4"></div>
       {/* <button
         type="button"
         className="h-12 w-full rounded-2xl border border-red-100 bg-red-50 text-sm font-bold text-red-600 transition hover:bg-red-100 active:scale-[0.99]"

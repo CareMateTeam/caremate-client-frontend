@@ -10,18 +10,21 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useI18n } from "@/libs/i18n/i18n-provider";
+
 export function BottomNavbar() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   const menus = [
     {
       href: "/home",
-      label: "Home",
+      label: t.nav.home,
       icon: <SquareMenu className="h-5 w-5" />,
     },
     {
       href: "/booking",
-      label: "Booking",
+      label: t.nav.booking,
       icon: <CalendarRange className="h-5 w-5" />,
     },
     // {
@@ -31,17 +34,17 @@ export function BottomNavbar() {
     // },
     {
       href: "/members",
-      label: "Members",
+      label: t.nav.members,
       icon: <UsersRound className="h-5 w-5" />,
     },
     {
       href: "/notifications",
-      label: "Notification",
+      label: t.nav.notifications,
       icon: <Bell className="h-5 w-5" />,
     },
     {
       href: "/profile",
-      label: "Profile",
+      label: t.nav.profile,
       icon: <UserRound className="h-5 w-5" />,
     },
   ];

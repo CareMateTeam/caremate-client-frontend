@@ -94,12 +94,12 @@ const notifications: NotificationItem[] = [
   },
 ];
 
-const filterTabs: { label: string; value: NotificationType }[] = [
-  { label: "All", value: "all" },
-  { label: "Booking", value: "booking" },
-  { label: "Care", value: "care" },
-  { label: "Payment", value: "payment" },
-  { label: "System", value: "system" },
+const filterTabs: { value: NotificationType }[] = [
+  { value: "all" },
+  { value: "booking" },
+  { value: "care" },
+  { value: "payment" },
+  { value: "system" },
 ];
 
 function getPriorityStyle(priority: NotificationItem["priority"]) {
@@ -131,6 +131,14 @@ function getTypeStyle(type: NotificationItem["type"]) {
 export default function NotificationPage() {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<NotificationType>("all");
+
+  const filterLabels: Record<NotificationType, string> = {
+    all: t.notifications.filterAll,
+    booking: t.notifications.filterBooking,
+    care: t.notifications.filterCare,
+    payment: t.notifications.filterPayment,
+    system: t.notifications.filterSystem,
+  };
 
   const filteredNotifications = useMemo(() => {
     if (activeTab === "all") {
@@ -169,7 +177,7 @@ export default function NotificationPage() {
             </div>
 
             <p className="mt-1 text-xs font-semibold text-slate-500">
-              Stay updated with your care activities
+              {t.notifications.headerSubtitle}
             </p>
           </div>
 
@@ -184,10 +192,10 @@ export default function NotificationPage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-white/80">
-                  Notification Center
+                  {t.notifications.centerLabel}
                 </p>
                 <h2 className="mt-2 text-3xl font-black leading-tight">
-                  You have {unreadCount} new updates
+                  {t.notifications.headlinePrefix}{unreadCount}{t.notifications.headlineSuffix}
                 </h2>
               </div>
 
@@ -197,29 +205,28 @@ export default function NotificationPage() {
             </div>
 
             <p className="mt-4 max-w-xs text-sm leading-6 text-white/90">
-              Track booking, care notes, payment status, and important security
-              alerts in one place.
+              {t.notifications.description}
             </p>
 
             <div className="mt-5 grid grid-cols-3 gap-3">
               <div className="rounded-2xl bg-white/20 p-3 backdrop-blur">
                 <p className="text-xl font-black">{notifications.length}</p>
                 <p className="text-[11px] font-semibold text-white/80">
-                  Total
+                  {t.notifications.statTotal}
                 </p>
               </div>
 
               <div className="rounded-2xl bg-white/20 p-3 backdrop-blur">
                 <p className="text-xl font-black">{unreadCount}</p>
                 <p className="text-[11px] font-semibold text-white/80">
-                  Unread
+                  {t.notifications.statUnread}
                 </p>
               </div>
 
               <div className="rounded-2xl bg-white/20 p-3 backdrop-blur">
                 <p className="text-xl font-black">{highPriorityCount}</p>
                 <p className="text-[11px] font-semibold text-white/80">
-                  Urgent
+                  {t.notifications.statUrgent}
                 </p>
               </div>
             </div>
@@ -233,7 +240,7 @@ export default function NotificationPage() {
             </div>
             <p className="mt-3 text-lg font-black text-slate-950">3</p>
             <p className="text-xs font-semibold text-slate-500">
-              Upcoming care tasks
+              {t.notifications.upcomingTasks}
             </p>
           </div>
 
@@ -243,7 +250,7 @@ export default function NotificationPage() {
             </div>
             <p className="mt-3 text-lg font-black text-slate-950">12</p>
             <p className="text-xs font-semibold text-slate-500">
-              Completed updates
+              {t.notifications.completedUpdates}
             </p>
           </div>
         </section>
@@ -252,10 +259,10 @@ export default function NotificationPage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xl font-black text-slate-950">
-                Recent notifications
+                {t.notifications.recentTitle}
               </h3>
               <p className="text-xs font-semibold text-slate-500">
-                Mock data for UI preview
+                {t.notifications.recentSubtitle}
               </p>
             </div>
 
@@ -263,7 +270,7 @@ export default function NotificationPage() {
               type="button"
               className="rounded-full bg-slate-950 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-slate-200 active:scale-95"
             >
-              Mark all read
+              {t.notifications.markAllRead}
             </button>
           </div>
 
@@ -283,7 +290,7 @@ export default function NotificationPage() {
                       : "bg-white text-slate-500 ring-1 ring-slate-100",
                   ].join(" ")}
                 >
-                  {tab.label}
+                  {filterLabels[tab.value]}
                 </button>
               );
             })}
@@ -347,7 +354,7 @@ export default function NotificationPage() {
                         type="button"
                         className="rounded-full bg-slate-50 px-3 py-1.5 text-xs font-black text-slate-700 ring-1 ring-slate-100 active:scale-95"
                       >
-                        View
+                        {t.notifications.viewButton}
                       </button>
                     </div>
                   </div>
@@ -365,11 +372,10 @@ export default function NotificationPage() {
 
             <div>
               <h3 className="text-base font-black text-slate-950">
-                CareMate keeps your family updated
+                {t.notifications.bottomTitle}
               </h3>
               <p className="mt-1 text-sm leading-6 text-slate-500">
-                Important updates about care, bookings, and safety will appear
-                here automatically.
+                {t.notifications.bottomDescription}
               </p>
             </div>
           </div>

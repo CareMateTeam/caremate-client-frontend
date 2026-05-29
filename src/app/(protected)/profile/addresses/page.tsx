@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import type { MapPosition } from "./map-picker";
+import { useI18n } from "@/libs/i18n/i18n-provider";
 import { unwrapApiData } from "@/libs/user/map-user-profile";
 import { AddressForm } from "@/dto/user";
 import { getMapPosition } from "@/libs/user/map-lib";
@@ -13,7 +14,7 @@ const MapPicker = dynamic(() => import("./map-picker"), {
   ssr: false,
   loading: () => (
     <div className="grid h-[320px] place-items-center rounded-[1.5rem] bg-slate-100 text-sm font-semibold text-slate-500">
-      กำลังโหลดแผนที่...
+      Loading map...
     </div>
   ),
 });
@@ -29,6 +30,7 @@ const initialForm: AddressForm = {
 };
 
 export default function AddressesPage() {
+  const { t } = useI18n();
   const [form, setForm] = useState<AddressForm>(initialForm);
   const [saving, setSaving] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -52,7 +54,7 @@ export default function AddressesPage() {
         const json = await res.json().catch(() => null);
 
         if (!res.ok) {
-          throw new Error(json?.message ?? "Failed to fetch address");
+          throw new Error(json?.message ?? t.addresses.fetchError);
         }
 
         const address = unwrapApiData(json);
@@ -74,14 +76,14 @@ export default function AddressesPage() {
         });
       } catch (error) {
         console.error("Fetch address error:", error);
-        setMessage("โหลดข้อมูลที่อยู่ไม่สำเร็จ");
+        setMessage(t.addresses.fetchError);
       } finally {
         setLoading(false);
       }
     };
 
     fetchAddress();
-  }, []);
+  }, [t]);
 
   const updateForm = <K extends keyof AddressForm>(
     key: K,
@@ -105,7 +107,7 @@ export default function AddressesPage() {
     setMessage("");
 
     if (!navigator.geolocation) {
-      setMessage("เบราว์เซอร์นี้ไม่รองรับการดึงตำแหน่งปัจจุบัน");
+      setMessage(t.addresses.geoUnsupported);
       return;
     }
 
@@ -118,22 +120,20 @@ export default function AddressesPage() {
           lng: position.coords.longitude,
         });
 
-        setMessage(
-          "ดึงตำแหน่งปัจจุบันเรียบร้อยแล้ว สามารถขยับหมุดเพื่อปรับตำแหน่งได้",
-        );
+        setMessage(t.addresses.geoSuccess);
         setLocating(false);
       },
       (error) => {
         console.error("Geolocation error:", error);
 
         if (error.code === error.PERMISSION_DENIED) {
-          setMessage("ไม่สามารถเข้าถึงตำแหน่งได้ เพราะผู้ใช้ไม่อนุญาต");
+          setMessage(t.addresses.geoDenied);
         } else if (error.code === error.POSITION_UNAVAILABLE) {
-          setMessage("ไม่สามารถระบุตำแหน่งปัจจุบันได้");
+          setMessage(t.addresses.geoUnavailable);
         } else if (error.code === error.TIMEOUT) {
-          setMessage("การดึงตำแหน่งใช้เวลานานเกินไป กรุณาลองใหม่");
+          setMessage(t.addresses.geoTimeout);
         } else {
-          setMessage("ดึงตำแหน่งไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+          setMessage(t.addresses.geoFailed);
         }
 
         setLocating(false);
@@ -150,12 +150,12 @@ export default function AddressesPage() {
     event.preventDefault();
 
     if (!form.addressLine.trim()) {
-      setMessage("กรุณากรอกที่อยู่");
+      setMessage(t.addresses.addressRequired);
       return;
     }
 
     if (!form.latitude || !form.longitude) {
-      setMessage("กรุณาเลือกตำแหน่งจากแผนที่ หรือกดใช้ตำแหน่งปัจจุบัน");
+      setMessage(t.addresses.pinRequired);
       return;
     }
 
@@ -166,12 +166,12 @@ export default function AddressesPage() {
       const longitude = Number(form.longitude);
 
       if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
-        setMessage("Latitude ต้องเป็นตัวเลขระหว่าง -90 ถึง 90");
+        setMessage(t.addresses.latRange);
         return;
       }
 
       if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-        setMessage("Longitude ต้องเป็นตัวเลขระหว่าง -180 ถึง 180");
+        setMessage(t.addresses.lngRange);
         return;
       }
       const payload = {
@@ -196,13 +196,13 @@ export default function AddressesPage() {
       const json = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error(json?.message ?? "Failed to update address");
+        throw new Error(json?.message ?? t.addresses.saveError);
       }
 
       setShowSuccessPopup(true);
     } catch (error) {
       console.error("Save address error:", error);
-      setMessage("บันทึกที่อยู่ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+      setMessage(t.addresses.saveError);
     } finally {
       setSaving(false);
     }
@@ -222,13 +222,12 @@ export default function AddressesPage() {
       <section className="rounded-[2rem] border border-white/80 bg-white/85 p-5 shadow-sm backdrop-blur">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-cyan-600">Profile</p>
+            <p className="text-sm font-semibold text-cyan-600">{t.addresses.badge}</p>
             <h1 className="mt-1 text-2xl font-extrabold text-slate-950">
-              ที่อยู่ของฉัน
+              {t.addresses.title}
             </h1>
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              กรอกที่อยู่สำหรับให้ผู้ดูแลเดินทางไปยังสถานที่ดูแล
-              และเลือกตำแหน่งบนแผนที่เพื่อความแม่นยำ
+              {t.addresses.description}
             </p>
           </div>
 
@@ -244,12 +243,12 @@ export default function AddressesPage() {
       >
         <section className="space-y-4">
           <h2 className="text-lg font-bold text-slate-950">
-            รายละเอียดที่อยู่
+            {t.addresses.detailsTitle}
           </h2>
 
           <label className="block">
             <span className="mb-2 block text-sm font-semibold text-slate-700">
-              ที่อยู่
+              {t.addresses.addressLabel}
             </span>
 
             <textarea
@@ -258,39 +257,39 @@ export default function AddressesPage() {
               onChange={(event) =>
                 updateForm("addressLine", event.target.value)
               }
-              placeholder="เช่น บ้านเลขที่, หมู่บ้าน, อาคาร, ชั้น, ห้อง, ถนน"
+              placeholder={t.addresses.addressPlaceholder}
               className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
             />
           </label>
 
           <div className="grid grid-cols-2 gap-3">
             <FormInput
-              label="แขวง / ตำบล"
+              label={t.addresses.subdistrictLabel}
               value={form.subdistrict}
-              placeholder="เช่น คลองตันเหนือ"
+              placeholder={t.addresses.subdistrictPlaceholder}
               onChange={(value) => updateForm("subdistrict", value)}
             />
 
             <FormInput
-              label="เขต / อำเภอ"
+              label={t.addresses.districtLabel}
               value={form.district}
-              placeholder="เช่น วัฒนา"
+              placeholder={t.addresses.districtPlaceholder}
               onChange={(value) => updateForm("district", value)}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <FormInput
-              label="จังหวัด"
+              label={t.addresses.provinceLabel}
               value={form.province}
-              placeholder="เช่น กรุงเทพมหานคร"
+              placeholder={t.addresses.provincePlaceholder}
               onChange={(value) => updateForm("province", value)}
             />
 
             <FormInput
-              label="รหัสไปรษณีย์"
+              label={t.addresses.postalCodeLabel}
               value={form.postalCode}
-              placeholder="เช่น 10110"
+              placeholder={t.addresses.postalCodePlaceholder}
               inputMode="numeric"
               maxLength={5}
               onChange={(value) => updateForm("postalCode", value)}
@@ -302,10 +301,10 @@ export default function AddressesPage() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-bold text-slate-950">
-                ตำแหน่งบนแผนที่
+                {t.addresses.mapTitle}
               </h2>
               <p className="mt-1 text-sm leading-6 text-slate-500">
-                แตะบนแผนที่หรือขยับหมุด เพื่อเลือกพิกัด latitude และ longitude
+                {t.addresses.mapDescription}
               </p>
             </div>
 
@@ -315,7 +314,7 @@ export default function AddressesPage() {
               disabled={locating}
               className="shrink-0 rounded-2xl bg-cyan-50 px-3 py-2 shadow-md text-xs font-bold text-cyan-700 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {locating ? "กำลังระบุ..." : "ใช้ตำแหน่งปัจจุบัน"}
+              {locating ? t.addresses.locating : t.addresses.useCurrentLocation}
             </button>
           </div>
 
@@ -340,8 +339,7 @@ export default function AddressesPage() {
           </div> */}
 
           <div className="rounded-2xl bg-cyan-50 px-4 py-3 text-xs leading-5 text-cyan-800">
-            แนะนำให้กด “ใช้ตำแหน่งปัจจุบัน” ก่อน แล้วค่อยขยับหมุดบนแผนที่
-            เพื่อให้ตำแหน่งแม่นยำขึ้น
+            {t.addresses.tip}
           </div>
         </section>
 
@@ -357,7 +355,7 @@ export default function AddressesPage() {
             onClick={() => window.history.back()}
             className="h-12 flex-1 rounded-2xl border border-slate-200 bg-white text-sm font-bold text-slate-600 transition hover:bg-slate-50 active:scale-[0.99]"
           >
-            ย้อนกลับ
+            {t.addresses.backButton}
           </button>
 
           <button
@@ -365,11 +363,11 @@ export default function AddressesPage() {
             disabled={saving}
             className="h-12 flex-1 rounded-2xl bg-cyan-500 text-sm font-bold text-white shadow-md shadow-cyan-100 transition hover:bg-cyan-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {saving ? "กำลังบันทึก..." : "บันทึกที่อยู่"}
+            {saving ? t.addresses.savingButton : t.addresses.saveButton}
           </button>
         </div>
       </form>
-      {showSuccessPopup ? <SaveSuccessPopUp label="ข้อมูลที่อยู่" backto="หน้าโปรไฟล์" backtoHref="/profile" /> : null}
+      {showSuccessPopup ? <SaveSuccessPopUp label={t.addresses.saveSuccessLabel} backto={t.addresses.saveSuccessBackto} backtoHref="/profile" /> : null}
     </div>
   );
 }

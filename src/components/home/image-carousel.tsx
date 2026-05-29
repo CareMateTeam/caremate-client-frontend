@@ -38,20 +38,20 @@ export default function HomeImageCarousel() {
 
   const activeItem = carouselItems[activeIndex];
 
-  const nextIndex = useMemo(() => {
-    return activeIndex === carouselItems.length - 1 ? 0 : activeIndex + 1;
-  }, [activeIndex]);
+//   const nextIndex = useMemo(() => {
+//     return activeIndex === carouselItems.length - 1 ? 0 : activeIndex + 1;
+//   }, [activeIndex]);
 
-  const previousIndex = useMemo(() => {
-    return activeIndex === 0 ? carouselItems.length - 1 : activeIndex - 1;
-  }, [activeIndex]);
+//   const previousIndex = useMemo(() => {
+//     return activeIndex === 0 ? carouselItems.length - 1 : activeIndex - 1;
+//   }, [activeIndex]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       setActiveIndex((prev) =>
         prev === carouselItems.length - 1 ? 0 : prev + 1,
       );
-    }, 4500);
+    }, 2500);
 
     return () => window.clearInterval(timer);
   }, []);
@@ -66,7 +66,7 @@ export default function HomeImageCarousel() {
             <div
               key={item.src}
               className={[
-                "absolute inset-0 transition-all duration-700 ease-out",
+                "absolute inset-0 transition-all duration-[1300ms] ease-out",
                 isActive
                   ? "scale-100 opacity-100"
                   : "pointer-events-none scale-105 opacity-0",

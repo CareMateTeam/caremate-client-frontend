@@ -65,7 +65,7 @@ export default function BookingPage() {
         setSelectedServiceId("");
       } catch (error) {
         console.error("Fetch care services error:", error);
-        setServiceError("ไม่สามารถโหลดข้อมูลบริการได้");
+        setServiceError(t.booking.fetchServiceError);
       } finally {
         setLoadingServices(false);
       }
@@ -166,8 +166,7 @@ export default function BookingPage() {
         </div>
 
         <p className="text-sm leading-6 text-slate-600">
-          เลือกบริการดูแลที่เหมาะกับคนสำคัญของคุณ พร้อมเลือกวัน เวลา
-          และผู้ดูแลที่ต้องการได้ง่าย ๆ
+          {t.booking.headerDescription}
         </p>
       </header>
 
@@ -175,17 +174,17 @@ export default function BookingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-slate-950">
-              เลือกประเภทบริการ
+              {t.booking.chooseServiceTitle}
             </h2>
             <p className="mt-1 text-xs text-slate-500">
               {selectedService
-                ? "แตะการ์ดเดิมอีกครั้งเพื่อยกเลิกการเลือก"
-                : "เลือกบริการที่ต้องการให้ CareMate ช่วยดูแล"}
+                ? t.booking.hintSelected
+                : t.booking.hintDefault}
             </p>
           </div>
 
           <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-semibold text-cyan-700">
-            {selectedService ? "เลือกแล้ว" : `${services.length} บริการ`}
+            {selectedService ? t.booking.selectedBadge : `${services.length} ${t.booking.serviceCount}`}
           </span>
         </div>
 
@@ -209,7 +208,7 @@ export default function BookingPage() {
           </div>
         ) : services.length === 0 ? (
           <div className="rounded-3xl border border-white bg-white/80 p-5 text-sm font-medium text-slate-500 shadow-sm">
-            ยังไม่มีข้อมูลบริการ
+            {t.booking.noServices}
           </div>
         ) : (
           <>
@@ -282,7 +281,7 @@ export default function BookingPage() {
                         <div className="flex items-end justify-between gap-2">
                           <div>
                             <p className="text-[10px] font-medium text-slate-400">
-                              เริ่มต้น
+                              {t.booking.startingPrice}
                             </p>
                             <p
                               className={[
@@ -302,7 +301,7 @@ export default function BookingPage() {
                                 : "bg-slate-200 text-slate-500",
                             ].join(" ")}
                           >
-                            {service.is_active ? "พร้อมให้บริการ" : "ไม่พร้อมให้บริการ"}
+                            {service.is_active ? t.booking.available : t.booking.unavailable}
                           </span>
                         </div>
                       </div>
@@ -319,7 +318,7 @@ export default function BookingPage() {
                   onClick={handleContinueBooking}
                   className="mt-2 h-14 w-full rounded-2xl bg-cyan-500 px-5 text-sm font-extrabold text-white shadow-lg shadow-cyan-100 transition hover:bg-cyan-600 active:scale-[0.98]"
                 >
-                  กดเพื่อจองต่อ
+                  {t.booking.continueBooking}
                 </button>
               </div>
             )}

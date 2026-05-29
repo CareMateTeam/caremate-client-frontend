@@ -2,6 +2,8 @@
 
 import type { BackendCareService } from "@/dto/service";
 import { formatMoney } from "@/libs/general/currency-format";
+import { useI18n } from "@/libs/i18n/i18n-provider";
+import type { Dictionary } from "@/libs/i18n/dictionaries/en";
 import {
   SummaryRowDark,
   SummaryRowLight,
@@ -64,39 +66,41 @@ function buildAddress(detail: BookingCareTargetDetail | null) {
   return address || "-";
 }
 
-function formatGender(value?: string | null) {
+function formatGender(value: string | null | undefined, t: Dictionary) {
   switch (value) {
     case "male":
-      return "ชาย";
+      return t.gender.male;
     case "female":
-      return "หญิง";
+      return t.gender.female;
     case "other":
-      return "อื่น ๆ";
+      return t.gender.other;
     default:
       return valueOrDash(value);
   }
 }
 
-function formatRelationship(value?: string | null) {
+function formatRelationship(value: string | null | undefined, t: Dictionary) {
   switch (value) {
     case "self":
-      return "ตัวฉันเอง";
+      return t.relationship.self;
     case "father":
-      return "พ่อ";
+      return t.relationship.father;
     case "mother":
-      return "แม่";
+      return t.relationship.mother;
     case "grandfather":
-      return "ปู่ / ตา";
+      return t.relationship.grandfather;
     case "grandmother":
-      return "ย่า / ยาย";
+      return t.relationship.grandmother;
     case "sibling":
-      return "พี่น้อง";
+      return t.relationship.sibling;
     case "child":
-      return "ลูก";
+      return t.relationship.child;
     case "spouse":
-      return "คู่สมรส";
+      return t.relationship.spouse;
+    case "relative":
+      return t.relationship.relative;
     case "other":
-      return "อื่น ๆ";
+      return t.relationship.other;
     default:
       return valueOrDash(value);
   }
@@ -162,6 +166,8 @@ export default function BookingPaymentStep({
   billableHours,
   onPaymentMethodChange,
 }: BookingPaymentStepProps) {
+  const { t } = useI18n();
+  const p = t.booking.payment;
   const detailName = buildFullName(selectedCareTargetDetail);
   const address = buildAddress(selectedCareTargetDetail);
 
@@ -169,26 +175,26 @@ export default function BookingPaymentStep({
     <div className="space-y-5">
       <div>
         <h2 className="text-xl font-black text-slate-950">
-          ตรวจสอบและชำระเงิน
+          {p.title}
         </h2>
         <p className="mt-1 text-sm text-slate-500">
-          ตรวจสอบรายละเอียดผู้รับการดูแลและข้อมูลการจองก่อนยืนยัน
+          {p.description}
         </p>
       </div>
 
       <section className="rounded-xl bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 p-5 text-white shadow-xl shadow-slate-200">
         <div className="space-y-3">
           <SummaryRowDark
-            label="บริการ"
+            label={p.summaryService}
             value={selectedService?.name_th ?? "-"}
           />
 
-          <SummaryRowDark label="วันที่" value={date || "-"} />
+          <SummaryRowDark label={p.summaryDate} value={date || "-"} />
 
-          <SummaryRowDark label="เวลา" value={selectedTimeLabel} />
+          <SummaryRowDark label={p.summaryTime} value={selectedTimeLabel} />
 
           <SummaryRowDark
-            label="ผู้รับการดูแล"
+            label={p.summaryCareReceiver}
             value={
               selectedCareTargetDetail
                 ? detailName
@@ -197,10 +203,10 @@ export default function BookingPaymentStep({
           />
 
           <SummaryRowDark
-            label="ประเภท"
+            label={p.summaryType}
             value={
               selectedCareTarget?.type === "self"
-                ? "ดูแลตัวเราเอง"
+                ? p.typeSelf
                 : (selectedCareTarget?.subtitle ?? "-")
             }
           />
@@ -241,39 +247,39 @@ export default function BookingPaymentStep({
           <div className="space-y-3">
             <SectionTitle
               icon="👤"
-              title="ข้อมูลส่วนตัว"
-              subtitle="ข้อมูลหลักของผู้รับการดูแล"
+              title={p.personalTitle}
+              subtitle={p.personalSubtitle}
             />
 
             <div className="grid grid-cols-2 gap-3">
               <InfoRow
-                label="ชื่อ"
+                label={p.labelFirstName}
                 value={selectedCareTargetDetail?.firstName}
               />
               <InfoRow
-                label="นามสกุล"
+                label={p.labelLastName}
                 value={selectedCareTargetDetail?.lastName}
               />
             </div>
             <div className="space-y-3">
               <InfoRow
-                label="ชื่อเล่น"
+                label={p.labelNickname}
                 value={selectedCareTargetDetail?.nickname}
               />
               <InfoRow
-                label="เพศ"
-                value={formatGender(selectedCareTargetDetail?.gender)}
+                label={p.labelGender}
+                value={formatGender(selectedCareTargetDetail?.gender, t)}
               />
               <InfoRow
-                label="วันเกิด"
+                label={p.labelDob}
                 value={formatDate(selectedCareTargetDetail?.dateOfBirth)}
               />
               <InfoRow
-                label="ความสัมพันธ์"
+                label={p.labelRelationship}
                 value={
                   selectedCareTargetDetail?.type === "self"
-                    ? "ตัวฉันเอง"
-                    : formatRelationship(selectedCareTargetDetail?.relationship)
+                    ? t.relationship.self
+                    : formatRelationship(selectedCareTargetDetail?.relationship, t)
                 }
               />
             </div>
@@ -284,16 +290,16 @@ export default function BookingPaymentStep({
           <div className="space-y-3">
             <SectionTitle
               icon="☎️"
-              title="ข้อมูลติดต่อ"
-              subtitle="ใช้สำหรับประสานงานก่อนเข้ารับบริการ"
+              title={p.contactTitle}
+              subtitle={p.contactSubtitle}
             />
 
             <div className="grid grid-cols-1 gap-3">
               <InfoRow
-                label="เบอร์โทร"
+                label={p.labelPhone}
                 value={selectedCareTargetDetail?.phone}
               />
-              <InfoRow label="อีเมล" value={selectedCareTargetDetail?.email} />
+              <InfoRow label={p.labelEmail} value={selectedCareTargetDetail?.email} />
             </div>
           </div>
 
@@ -302,13 +308,13 @@ export default function BookingPaymentStep({
           <div className="space-y-3">
             <SectionTitle
               icon="📍"
-              title="ที่อยู่และตำแหน่ง"
-              subtitle="ใช้สำหรับเดินทางไปให้บริการ"
+              title={p.addressTitle}
+              subtitle={p.addressSubtitle}
             />
 
             <div className="rounded-lg bg-sky-100 px-4 py-6">
               <p className="text-[12px] font-bold text-gray-800">
-                ที่อยู่สำหรับเข้ารับบริการ
+                {p.addressInBox}
               </p>
               <p className="mt-2 text-xs font-semibold leading-6 text-slate-600">
                 {address}
@@ -321,21 +327,21 @@ export default function BookingPaymentStep({
           <div className="space-y-3">
             <SectionTitle
               icon="🚨"
-              title="ผู้ติดต่อฉุกเฉิน"
-              subtitle="ข้อมูลสำคัญกรณีเกิดเหตุจำเป็น"
+              title={p.emergencyTitle}
+              subtitle={p.emergencySubtitle}
             />
 
             <div className="grid grid-cols-1 gap-3">
               <InfoRow
-                label="ชื่อผู้ติดต่อฉุกเฉิน"
+                label={p.labelEmergencyName}
                 value={selectedCareTargetDetail?.emergencyContactName}
               />
               <InfoRow
-                label="เบอร์โทรฉุกเฉิน"
+                label={p.labelEmergencyPhone}
                 value={selectedCareTargetDetail?.emergencyContactPhone}
               />
               <InfoRow
-                label="ความสัมพันธ์"
+                label={p.labelEmergencyRelationship}
                 value={selectedCareTargetDetail?.emergencyContactRelationship}
               />
             </div>
@@ -346,29 +352,29 @@ export default function BookingPaymentStep({
           <div className="space-y-3">
             <SectionTitle
               icon="🩺"
-              title="ข้อมูลสุขภาพ"
-              subtitle="ช่วยให้ผู้ดูแลเตรียมตัวได้ถูกต้อง"
+              title={p.healthTitle}
+              subtitle={p.healthSubtitle}
             />
 
             <div className="grid grid-cols-1 gap-3">
               <InfoRow
-                label="กรุ๊ปเลือด"
+                label={p.labelBloodType}
                 value={selectedCareTargetDetail?.bloodType}
               />
               <InfoRow
-                label="ประวัติแพ้ยา / แพ้อาหาร"
+                label={p.labelAllergies}
                 value={selectedCareTargetDetail?.allergies}
               />
               <InfoRow
-                label="โรคประจำตัว"
+                label={p.labelDiseases}
                 value={selectedCareTargetDetail?.congenitalDiseases}
               />
               <InfoRow
-                label="ยาที่ใช้อยู่ปัจจุบัน"
+                label={p.labelMedications}
                 value={selectedCareTargetDetail?.currentMedications}
               />
               <InfoRow
-                label="หมายเหตุการดูแล"
+                label={p.labelCareNote}
                 value={selectedCareTargetDetail?.careNote}
               />
             </div>
@@ -377,17 +383,17 @@ export default function BookingPaymentStep({
       </section>
 
       <section className="rounded-xl border border-slate-100 bg-white p-5 shadow-md">
-        <p className="mb-4 text-sm font-black text-slate-950">วิธีชำระเงิน</p>
+        <p className="mb-4 text-sm font-black text-slate-950">{p.methodTitle}</p>
 
         <div className="grid grid-cols-2 gap-3">
           {[
             {
               value: "promptpay",
-              label: "PromptPay",
+              label: p.methodPromptpay,
             },
             {
               value: "cash",
-              label: "เงินสด",
+              label: p.methodCash,
             },
           ].map((method) => {
             const active = paymentMethod === method.value;
@@ -414,12 +420,12 @@ export default function BookingPaymentStep({
       <section className="rounded-xl border border-slate-100 bg-white p-5 shadow-md">
         <div className="space-y-3">
           <SummaryRowLight
-            label="ราคา/ชั่วโมง"
+            label={p.perHour}
             value={`${formatMoney(baseFeePerHour)} ฿`}
           />
 
           <SummaryRowLight
-            label="ระยะเวลาจริง"
+            label={p.duration}
             value={formatDuration(bookingDurationMinutes)}
           />
 
@@ -429,18 +435,18 @@ export default function BookingPaymentStep({
           /> */}
 
           <SummaryRowLight
-            label="ค่าบริการ"
+            label={p.serviceFee}
             value={`${formatMoney(serviceFee)} ฿`}
           />
 
           <SummaryRowLight
-            label="ค่าธรรมเนียมแพลตฟอร์ม"
+            label={p.platformFee}
             value={`${formatMoney(platformFee)} ฿`}
           />
 
           <div className="border-t border-dashed border-slate-400 pt-3">
             <SummaryRowLight
-              label="ยอดรวม"
+              label={p.totalPrice}
               value={`${formatMoney(totalPrice)} ฿`}
             />
           </div>

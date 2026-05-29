@@ -15,80 +15,11 @@ import { TopUserInformationSkeleton } from "@/components/card/user-skelton";
 import HomeImageCarousel from "@/components/home/image-carousel";
 import HomeHeroSection from "@/components/home/home-hero-section";
 
-const quickActions = [
-  {
-    title: "จองบริการดูแล",
-    description: "เลือกบริการดูแลที่เหมาะกับคุณและครอบครัว",
-    href: "/services",
-    icon: "🩺",
-    color: "from-cyan-500 to-emerald-500",
-  },
-  {
-    title: "จัดการสมาชิก",
-    description: "เพิ่มข้อมูลผู้รับการดูแลและคนในครอบครัว",
-    href: "/members",
-    icon: "👨‍👩‍👧",
-    color: "from-emerald-500 to-teal-500",
-  },
-  {
-    title: "ตั้งค่าที่อยู่",
-    description: "กำหนดตำแหน่งสำหรับให้ผู้ดูแลเดินทางไปบริการ",
-    href: "/profile/addresses",
-    icon: "📍",
-    color: "from-sky-500 to-cyan-500",
-  },
-  {
-    title: "แจ้งเตือน",
-    description: "ติดตามข่าวสารและการแจ้งเตือนสำคัญ",
-    href: "/notifications",
-    icon: "🔔",
-    color: "from-violet-500 to-cyan-500",
-  },
-];
-
-const careHighlights = [
-  {
-    icon: "💚",
-    title: "ดูแลด้วยความเข้าใจ",
-    description:
-      "CareMate ช่วยให้การดูแลคนสำคัญเป็นเรื่องง่ายขึ้น ตั้งแต่ข้อมูลสุขภาพ ที่อยู่ ไปจนถึงการประสานงานกับผู้ดูแล",
-  },
-  {
-    icon: "🏠",
-    title: "บริการถึงบ้าน",
-    description:
-      "เหมาะสำหรับผู้สูงอายุ ผู้ป่วย หรือสมาชิกในครอบครัวที่ต้องการความช่วยเหลือในชีวิตประจำวัน",
-  },
-  {
-    icon: "📝",
-    title: "ข้อมูลครบในที่เดียว",
-    description:
-      "จัดเก็บข้อมูลผู้รับการดูแล เช่น โรคประจำตัว ยาที่ใช้ ภูมิแพ้ และผู้ติดต่อฉุกเฉิน เพื่อให้บริการได้ปลอดภัยมากขึ้น",
-  },
-];
-
-const healthTips = [
-  "เช็กข้อมูลสุขภาพของสมาชิกให้ครบก่อนทำการจองบริการ",
-  "ตั้งค่าที่อยู่และตำแหน่งแผนที่ให้ถูกต้อง เพื่อให้ผู้ดูแลเดินทางได้สะดวก",
-  "เพิ่มผู้ติดต่อฉุกเฉินไว้เสมอ เพื่อความปลอดภัยของผู้รับการดูแล",
-];
-
-const careSteps = [
-  {
-    step: "01",
-    title: "เพิ่มข้อมูลผู้รับการดูแล",
-    description: "กรอกข้อมูลส่วนตัว สุขภาพ ที่อยู่ และเบอร์ติดต่อฉุกเฉิน",
-  },
-  {
-    step: "02",
-    title: "เลือกบริการที่ต้องการ",
-    description: "เลือกประเภทบริการดูแลที่เหมาะกับสถานการณ์ของครอบครัว",
-  },
-  {
-    step: "03",
-    title: "ยืนยันวัน เวลา และสถานที่",
-    description: "ตรวจสอบรายละเอียดก่อนส่งคำขอรับบริการ",
-  },
+const quickActionsMeta = [
+  { href: "/services", icon: "🩺", color: "from-cyan-500 to-emerald-500" },
+  { href: "/members", icon: "👨‍👩‍👧", color: "from-emerald-500 to-teal-500" },
+  { href: "/profile/addresses", icon: "📍", color: "from-sky-500 to-cyan-500" },
+  { href: "/notifications", icon: "🔔", color: "from-violet-500 to-cyan-500" },
 ];
 
 export default function HomePage() {
@@ -128,13 +59,19 @@ export default function HomePage() {
     fetchMe();
   }, []);
 
+  const quickActions = t.home.quickActions.map((item, idx) => ({
+    ...item,
+    ...quickActionsMeta[idx],
+  }));
+  const careHighlights = t.home.careHighlights;
+  const healthTips = t.home.healthTips;
+  const careSteps = t.home.careStepsExtended;
+  const ctaLines = t.home.ctaHeadline.split("\n");
+
   return (
     <div className="z-10 space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          {/* <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
-            Welcome back
-          </p> */}
           <div className="flex gap-2 items-center">
             <div className="p-1 rounded-full overflow-hidden bg-white shadow-lg">
               <Image
@@ -186,7 +123,9 @@ export default function HomePage() {
               {item.description}
             </p>
 
-            <p className="mt-3 text-xs font-black text-cyan-600">กดเลย</p>
+            <p className="mt-3 text-xs font-black text-cyan-600">
+              {t.home.quickActionTap}
+            </p>
           </Link>
         ))}
       </section>
@@ -199,17 +138,15 @@ export default function HomePage() {
 
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-600">
-              About CareMate
+              {t.home.aboutBadge}
             </p>
 
             <h2 className="mt-1 text-xl font-black text-slate-950">
-              บ้านที่ดูแลกันได้ดีขึ้น เริ่มจากข้อมูลที่พร้อม
+              {t.home.aboutTitle}
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              CareMate ถูกออกแบบมาเพื่อช่วยให้ครอบครัวจัดการการดูแลได้ง่ายขึ้น
-              โดยเชื่อมข้อมูลผู้รับการดูแล ที่อยู่ สุขภาพ และบริการไว้ในที่เดียว
-              เพื่อให้การดูแลมีความต่อเนื่องและปลอดภัย
+              {t.home.aboutDescription}
             </p>
           </div>
         </div>
@@ -219,10 +156,10 @@ export default function HomePage() {
         <div className="mb-3 flex items-end justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-600">
-              Care Features
+              {t.home.careFeaturesBadge}
             </p>
             <h2 className="text-lg font-black text-slate-950">
-              CareMate ช่วยอะไรได้บ้าง
+              {t.home.careFeaturesTitle}
             </h2>
           </div>
         </div>
@@ -255,10 +192,10 @@ export default function HomePage() {
       <section className="overflow-hidden rounded-[2rem] border border-cyan-100 bg-white shadow-xl shadow-cyan-50">
         <div className="bg-gradient-to-r from-cyan-50 to-emerald-50 p-5">
           <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-600">
-            How it works
+            {t.home.howItWorksBadge}
           </p>
           <h2 className="mt-1 text-xl font-black text-slate-950">
-            เริ่มใช้งานง่ายใน 3 ขั้นตอน
+            {t.home.howItWorksTitle}
           </h2>
         </div>
 
@@ -296,7 +233,7 @@ export default function HomePage() {
 
           <div>
             <h2 className="text-lg font-black text-slate-950">
-              เคล็ดลับก่อนเริ่มจองบริการ
+              {t.home.tipsTitle}
             </h2>
 
             <div className="mt-4 space-y-3">
@@ -315,17 +252,20 @@ export default function HomePage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-cyan-300">
-              Ready to care
+              {t.home.ctaBadge}
             </p>
 
             <h2 className="mt-2 text-2xl font-black leading-tight">
-              เตรียมข้อมูลให้พร้อม
-              <br />
-              แล้วเริ่มดูแลได้ทันที
+              {ctaLines.map((line, idx) => (
+                <span key={idx}>
+                  {line}
+                  {idx < ctaLines.length - 1 && <br />}
+                </span>
+              ))}
             </h2>
 
             <p className="mt-3 text-sm leading-6 text-white/70">
-              เพิ่มสมาชิก ตั้งค่าที่อยู่ และเลือกบริการที่เหมาะกับครอบครัวของคุณ
+              {t.home.ctaDescription}
             </p>
           </div>
 
@@ -339,14 +279,14 @@ export default function HomePage() {
             href="/members"
             className="rounded-2xl bg-white px-4 py-3 text-center text-sm font-black text-slate-950 active:scale-[0.98]"
           >
-            จัดการสมาชิก
+            {t.home.ctaManageMembers}
           </Link>
 
           <Link
             href="/services"
             className="rounded-2xl bg-cyan-500 px-4 py-3 text-center text-sm font-black text-white active:scale-[0.98]"
           >
-            ดูบริการ
+            {t.home.ctaSeeServices}
           </Link>
         </div>
       </section>

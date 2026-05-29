@@ -2,6 +2,7 @@
 
 import type { BackendCareService } from "@/dto/service";
 import { formatMoney } from "@/libs/general/currency-format";
+import { useI18n } from "@/libs/i18n/i18n-provider";
 
 type BookingServiceSummaryProps = {
   loadingService: boolean;
@@ -14,6 +15,8 @@ export default function BookingServiceSummary({
   serviceError,
   selectedService,
 }: BookingServiceSummaryProps) {
+  const { t } = useI18n();
+  const s = t.booking.summary;
   return (
     <section className="rounded-lg border border-white bg-white/90 p-3 shadow-sm">
       {loadingService ? (
@@ -27,16 +30,16 @@ export default function BookingServiceSummary({
       ) : selectedService ? (
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xl font-bold text-black">รายละเอียดการจอง</p>
+            <p className="text-xl font-bold text-black">{s.title}</p>
 
             <div className="mt-2 flex items-start justify-between gap-3">
               <div>
                 <h2 className="w-fit rounded-3xl bg-emerald-500 px-4 py-0.5 text-sm font-semibold text-white">
-                  แพ็คเกจ : {selectedService.name_th}
+                  {s.packagePrefix}{selectedService.name_th}
                 </h2>
 
                 <p className="mt-1 text-xs text-slate-500">
-                  บริการดูแลที่ออกแบบมาเพื่อช่วยเหลือคุณในทุกช่วงวัย
+                  {s.packageDescription}
                 </p>
               </div>
             </div>
@@ -44,7 +47,7 @@ export default function BookingServiceSummary({
 
           <div className="rounded-lg bg-cyan-100 px-3 py-2 text-right">
             <p className="text-[10px] font-semibold text-cyan-600">
-              ราคาเริ่มต้น
+              {s.startingPrice}
             </p>
 
             <p className="text-base font-black text-cyan-700">
@@ -54,9 +57,9 @@ export default function BookingServiceSummary({
         </div>
       ) : (
         <div>
-          <p className="font-bold text-slate-900">ไม่พบข้อมูลบริการ</p>
+          <p className="font-bold text-slate-900">{s.noService}</p>
           <p className="mt-1 text-sm text-slate-500">
-            กรุณากลับไปเลือกบริการใหม่อีกครั้ง
+            {s.pleaseSelectAgain}
           </p>
         </div>
       )}
